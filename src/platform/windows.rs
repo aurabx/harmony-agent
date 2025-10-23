@@ -130,6 +130,18 @@ impl Platform for WindowsPlatform {
 
         Ok(missing)
     }
+
+    fn create_tun_device(&self, name: &str, mtu: u16) -> Result<tun::platform::Device> {
+        info!("Attempting to create TUN device '{}' with MTU {} on Windows", name, mtu);
+        
+        // Windows requires Wintun driver integration which is not yet implemented
+        // The tun crate supports Wintun but requires additional setup
+        warn!("Windows TUN device creation not yet implemented - requires Wintun driver");
+        
+        Err(WgAgentError::TunDevice(
+            "Windows TUN device creation not yet implemented (requires Wintun driver integration)".to_string()
+        ))
+    }
 }
 
 #[cfg(test)]

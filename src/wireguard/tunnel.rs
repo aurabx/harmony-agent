@@ -6,7 +6,7 @@
 use crate::config::NetworkConfig;
 use crate::error::{Result, WgAgentError};
 use crate::platform::{get_platform, Platform};
-use crate::wireguard::{KeyPair, Peer, PeerConfig};
+use crate::wireguard::{DeviceConfig, KeyPair, Peer, PeerConfig, WgDevice};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -137,6 +137,8 @@ pub struct Tunnel {
     peers: Arc<RwLock<HashMap<String, Peer>>>,
     /// Platform implementation
     platform: Box<dyn Platform>,
+    /// WireGuard device (None when stopped)
+    device: Arc<RwLock<Option<WgDevice>>>,
 }
 
 impl Tunnel {
@@ -149,6 +151,7 @@ impl Tunnel {
             state: Arc::new(RwLock::new(TunnelState::Uninitialized)),
             peers: Arc::new(RwLock::new(HashMap::new())),
             platform: get_platform(),
+            device: Arc::new(RwLock::new(None)),
         })
     }
 
@@ -193,17 +196,27 @@ impl Tunnel {
             }
         }
 
-        // Create the interface (actual TUN/TAP creation happens in WireGuard implementation)
-        if let Err(e) = self.platform.create_interface(&self.config.interface) {
-            error!("Failed to create interface: {}", e);
-            *self.state.write().await = TunnelState::Error;
-            return Err(e);
-        }
+        // Create WireGuard device configuration
+        let device_config = DeviceConfig {
+            interface: self.config.interface.clone(),
+            mtu: self.config.mtu,
+            keypair: self.config.keypair.clone(),
+            listen_port: 0, // Use random port
+            peers: self.config.peers.clone(),
+        };
 
-        // Set MTU
-        if let Err(e) = self.platform.set_mtu(&self.config.interface, self.config.mtu) {
-            warn!("Failed to set MTU: {}", e);
-        }
+        // Create WireGuard device (this creates TUN device and starts packet processing)
+        let device = match WgDevice::new(device_config, self.platform.as_ref()).await {
+            Ok(d) => d,
+            Err(e) => {
+                error!("Failed to create WireGuard device: {}", e);
+                *self.state.write().await = TunnelState::Error;
+                return Err(e);
+            }
+        };
+
+        // Get the actual interface name (may differ on macOS)
+        let interface_name = &self.config.interface;
 
         // Configure routes for all peers
         for peer_config in &self.config.peers {
@@ -215,7 +228,7 @@ impl Tunnel {
                 );
                 
                 if let Err(e) = self.platform.configure_routes(
-                    &self.config.interface,
+                    interface_name,
                     &peer_config.allowed_ips,
                 ) {
                     warn!("Failed to configure routes for peer {}: {}", peer_config.name, e);
@@ -231,14 +244,14 @@ impl Tunnel {
             );
             
             if let Err(e) = self.platform.configure_dns(
-                &self.config.interface,
+                interface_name,
                 &self.config.dns_servers,
             ) {
                 warn!("Failed to configure DNS: {}", e);
             }
         }
 
-        // Initialize peers
+        // Initialize peer tracking (for stats/monitoring)
         let mut peers = self.peers.write().await;
         for peer_config in &self.config.peers {
             match Peer::new(peer_config.clone()) {
@@ -254,12 +267,9 @@ impl Tunnel {
         }
         drop(peers);
 
-        // Bring interface up
-        if let Err(e) = self.platform.interface_up(&self.config.interface) {
-            error!("Failed to bring interface up: {}", e);
-            *self.state.write().await = TunnelState::Error;
-            return Err(e);
-        }
+        // WireGuard device has already brought the interface up, skip manual interface_up
+        // Store the device
+        *self.device.write().await = Some(device);
 
         *self.state.write().await = TunnelState::Active;
         info!(
@@ -288,6 +298,15 @@ impl Tunnel {
         *state = TunnelState::Stopping;
         drop(state);
 
+        // Stop WireGuard device first (this stops packet processing and TUN device)
+        let device = self.device.write().await.take();
+        if let Some(device) = device {
+            info!("Stopping WireGuard device");
+            if let Err(e) = device.stop().await {
+                warn!("Failed to stop WireGuard device: {}", e);
+            }
+        }
+
         // Deactivate all peers
         let mut peers = self.peers.write().await;
         for peer in peers.values_mut() {
@@ -314,11 +333,6 @@ impl Tunnel {
                     );
                 }
             }
-        }
-
-        // Bring interface down
-        if let Err(e) = self.platform.interface_down(&self.config.interface) {
-            warn!("Failed to bring interface down: {}", e);
         }
 
         // Destroy the interface
@@ -367,15 +381,23 @@ impl Tunnel {
         let peers = self.peers.read().await;
         let state = self.state.read().await;
 
-        let mut total_tx = 0;
-        let mut total_rx = 0;
+        // Get real stats from WgDevice if available
+        let (total_tx, total_rx) = if let Some(device) = self.device.read().await.as_ref() {
+            let device_stats = device.stats().await;
+            (device_stats.tx_bytes, device_stats.rx_bytes)
+        } else {
+            // Fallback to peer stats if device not available
+            let mut total_tx = 0;
+            let mut total_rx = 0;
+            for peer in peers.values() {
+                total_tx += peer.stats.tx_bytes;
+                total_rx += peer.stats.rx_bytes;
+            }
+            (total_tx, total_rx)
+        };
+
         let active_peers = peers.values().filter(|p| p.active).count();
         let healthy_peers = peers.values().filter(|p| p.is_healthy()).count();
-
-        for peer in peers.values() {
-            total_tx += peer.stats.tx_bytes;
-            total_rx += peer.stats.rx_bytes;
-        }
 
         TunnelStats {
             state: *state,

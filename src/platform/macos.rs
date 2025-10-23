@@ -6,6 +6,7 @@
 use crate::error::{Result, WgAgentError};
 use crate::platform::{detection, Platform, PlatformInfo};
 use std::process::Command;
+use tun::Device;
 use tracing::{debug, info, warn};
 
 /// macOS platform implementation
@@ -176,6 +177,31 @@ impl Platform for MacOsPlatform {
         }
 
         Ok(missing)
+    }
+
+    fn create_tun_device(&self, name: &str, mtu: u16) -> Result<tun::platform::Device> {
+        info!("Creating TUN device '{}' with MTU {}", name, mtu);
+
+        // On macOS, we need to let the system assign the utun number
+        // The tun crate requires a name, so we'll use "utun" and let the OS pick the number
+        let mut config = tun::Configuration::default();
+        
+        // Don't set a specific name - let macOS auto-assign
+        config
+            .mtu(mtu as i32)
+            .up();
+
+        let device = tun::create(&config).map_err(|e| {
+            WgAgentError::TunDevice(format!("Failed to create TUN device: {}", e))
+        })?;
+
+        // Get the actual name assigned by macOS
+        let actual_name = device.name().map_err(|e| {
+            WgAgentError::TunDevice(format!("Failed to get TUN device name: {}", e))
+        })?;
+        
+        info!("TUN device '{}' created successfully (requested: '{}')", actual_name, name);
+        Ok(device)
     }
 }
 

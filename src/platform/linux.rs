@@ -206,6 +206,30 @@ impl Platform for LinuxPlatform {
 
         Ok(missing)
     }
+
+    fn create_tun_device(&self, name: &str, mtu: u16) -> Result<tun::platform::Device> {
+        info!("Creating TUN device '{}' with MTU {}", name, mtu);
+
+        let mut config = tun::Configuration::default();
+        
+        config
+            .name(name)
+            .mtu(mtu as i32)
+            .up();
+
+        #[cfg(target_os = "linux")]
+        config.platform(|config| {
+            // Linux-specific: use TUN (not TAP) mode
+            config.packet_information(false);
+        });
+
+        let device = tun::create(&config).map_err(|e| {
+            WgAgentError::TunDevice(format!("Failed to create TUN device '{}': {}", name, e))
+        })?;
+
+        info!("TUN device '{}' created successfully", name);
+        Ok(device)
+    }
 }
 
 #[cfg(test)]

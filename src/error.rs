@@ -21,6 +21,18 @@ pub enum WgAgentError {
     #[error("WireGuard error: {0}")]
     WireGuard(String),
 
+    /// TUN device errors
+    #[error("TUN device error: {0}")]
+    TunDevice(String),
+
+    /// Packet processing errors
+    #[error("Packet processing error: {0}")]
+    PacketProcessing(String),
+
+    /// Handshake errors
+    #[error("Handshake error: {0}")]
+    Handshake(String),
+
     /// Control API errors
     #[error("Control API error: {0}")]
     ControlApi(String),

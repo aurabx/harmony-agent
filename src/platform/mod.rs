@@ -52,6 +52,10 @@ pub trait Platform: Send + Sync {
 
     /// Check if the platform has required capabilities
     fn check_capabilities(&self) -> Result<Vec<String>>;
+
+    /// Create and configure a TUN device for WireGuard
+    /// Returns a configured TUN device that can be used for packet I/O
+    fn create_tun_device(&self, name: &str, mtu: u16) -> Result<tun::platform::Device>;
 }
 
 /// Get the platform implementation for the current OS
