@@ -1,0 +1,55 @@
+# Rust formatting configuration for wg-agent
+
+# Edition
+edition = "2024"
+
+# Maximum line width
+max_width = 100
+
+# Hard tabs or spaces
+hard_tabs = false
+tab_spaces = 4
+
+# Newline style
+newline_style = "Unix"
+
+# Use field init shorthand if possible
+use_field_init_shorthand = true
+
+# Reorder imports
+reorder_imports = true
+reorder_modules = true
+
+# Format strings
+format_strings = true
+
+# Normalize comments
+normalize_comments = true
+
+# Wrap comments
+wrap_comments = true
+comment_width = 80
+
+# Control flow formatting
+control_brace_style = "AlwaysSameLine"
+indent_style = "Block"
+
+# Import grouping
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+
+# Function formatting
+fn_single_line = false
+where_single_line = false
+
+# Match formatting
+match_block_trailing_comma = true
+
+# Struct formatting
+struct_lit_single_line = false
+
+# Trailing commas
+trailing_comma = "Vertical"
+
+# Use try shorthand
+use_try_shorthand = true
