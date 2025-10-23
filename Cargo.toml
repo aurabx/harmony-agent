@@ -24,3 +24,11 @@ rand = "0.8"
 
 [dev-dependencies]
 tempfile = "3.8"
+proptest = "1.4"  # Property-based testing
+criterion = "0.5"  # Benchmarking
+mockall = "0.12"  # Mocking framework
+serial_test = "3.0"  # Serial test execution
+
+[[bench]]
+name = "benchmarks"
+harness = false

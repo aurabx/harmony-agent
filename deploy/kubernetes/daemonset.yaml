@@ -1,0 +1,226 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wg-agent
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wg-agent-config
+  namespace: wg-agent
+data:
+  config.toml: |
+    [network.default]
+    enable_wireguard = true
+    interface = "wg0"
+    mtu = 1420
+    private_key_path = "/etc/wg-agent/keys/private.key"
+    dns = ["10.100.0.2"]
+    
+    [[network.peers]]
+    name = "runbeam-core"
+    public_key = "YOUR_PEER_PUBLIC_KEY"
+    endpoint = "vpn.example.com:51820"
+    allowed_ips = ["10.42.0.0/16"]
+    persistent_keepalive_secs = 25
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wg-agent-keys
+  namespace: wg-agent
+type: Opaque
+stringData:
+  private.key: |
+    YOUR_BASE64_ENCODED_PRIVATE_KEY
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: wg-agent
+  namespace: wg-agent
+  labels:
+    app: wg-agent
+spec:
+  selector:
+    matchLabels:
+      app: wg-agent
+  template:
+    metadata:
+      labels:
+        app: wg-agent
+    spec:
+      hostNetwork: true
+      hostPID: true
+      
+      serviceAccountName: wg-agent
+      
+      # Init container to set up directories
+      initContainers:
+      - name: setup
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /var/run/wg-agent
+          chmod 755 /var/run/wg-agent
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+        securityContext:
+          privileged: true
+      
+      containers:
+      - name: wg-agent
+        image: ghcr.io/runbeam/wg-agent:latest
+        imagePullPolicy: Always
+        
+        command:
+        - /usr/local/bin/wg-agent
+        - start
+        - --config
+        - /etc/wg-agent/config.toml
+        
+        env:
+        - name: RUST_LOG
+          value: "info"
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        
+        # Required capabilities
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - IPC_LOCK
+          privileged: true
+        
+        # Resource limits
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        
+        # Volume mounts
+        volumeMounts:
+        - name: config
+          mountPath: /etc/wg-agent
+          readOnly: true
+        - name: keys
+          mountPath: /etc/wg-agent/keys
+          readOnly: true
+        - name: run
+          mountPath: /var/run
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9090
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9090
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        
+        # Expose metrics port
+        ports:
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+      
+      # Volumes
+      volumes:
+      - name: config
+        configMap:
+          name: wg-agent-config
+      - name: keys
+        secret:
+          secretName: wg-agent-keys
+          defaultMode: 0600
+      - name: run
+        hostPath:
+          path: /var/run
+          type: DirectoryOrCreate
+      
+      # Tolerations to run on all nodes
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wg-agent
+  namespace: wg-agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: wg-agent
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: wg-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: wg-agent
+subjects:
+- kind: ServiceAccount
+  name: wg-agent
+  namespace: wg-agent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wg-agent-metrics
+  namespace: wg-agent
+  labels:
+    app: wg-agent
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: wg-agent
+  ports:
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: wg-agent
+  namespace: wg-agent
+  labels:
+    app: wg-agent
+spec:
+  selector:
+    matchLabels:
+      app: wg-agent
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
