@@ -7,7 +7,7 @@ use clap::{Parser, Subcommand};
 use tracing::{error, info};
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
-use wg_agent::{APP_NAME, VERSION, config::Config, service::ServiceManager};
+use wg_agent::{APP_NAME, VERSION, config::Config, service::{create_service, ServiceMode}};
 
 /// Cross-platform WireGuard network agent
 #[derive(Parser, Debug)]
@@ -81,8 +81,14 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         Commands::Start => {
             info!("Starting agent with config: {}", cli.config);
             let _config = Config::from_file(&cli.config)?;
-            let service = ServiceManager::new()?;
-            service.run().await?;
+            let mode = ServiceMode::detect();
+            info!("Service mode: {:?}", mode);
+            let mut service = create_service(mode);
+            service.init()?;
+            service.start()?;
+            service.notify_ready()?;
+            info!("Service started successfully");
+            // In production, this would block until shutdown signal
             Ok(())
         },
         Commands::Stop => {

@@ -14,3 +14,13 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 anyhow = "1.0"
 thiserror = "1.0"
 libc = "0.2"
+
+# WireGuard dependencies
+boringtun = "0.6"
+base64 = "0.22"
+x25519-dalek = "=2.0.0-rc.3"  # Must match boringtun requirement
+zeroize = { version = "1.7", features = ["derive"] }
+rand = "0.8"
+
+[dev-dependencies]
+tempfile = "3.8"

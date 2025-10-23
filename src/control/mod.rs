@@ -3,34 +3,13 @@
 //! This module provides the control interface for receiving commands from
 //! main applications via Unix sockets (Linux/macOS) or Named Pipes (Windows).
 
-use crate::error::Result;
+mod api;
+mod handler;
+mod server;
 
-/// Control API server
-pub struct ControlServer {
-    // Placeholder for future implementation
-}
+pub use api::{ApiRequest, ApiResponse, ApiError};
+pub use handler::CommandHandler;
+pub use server::{ControlServer, DEFAULT_SOCKET_PATH};
 
-impl ControlServer {
-    /// Create a new control server
-    pub fn new() -> Result<Self> {
-        Ok(Self {})
-    }
-
-    /// Start the control server
-    pub async fn start(&self) -> Result<()> {
-        // To be implemented in Phase 5
-        Ok(())
-    }
-
-    /// Stop the control server
-    pub async fn stop(&self) -> Result<()> {
-        // To be implemented in Phase 5
-        Ok(())
-    }
-}
-
-impl Default for ControlServer {
-    fn default() -> Self {
-        Self::new().expect("Failed to create control server")
-    }
-}
+#[cfg(windows)]
+pub use server::DEFAULT_PIPE_NAME;

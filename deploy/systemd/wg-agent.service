@@ -1,0 +1,35 @@
+[Unit]
+Description=WireGuard Agent for Aurabox/JMIX/Runbeam
+Documentation=https://github.com/runbeam/wg-agent
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/wg-agent --config /etc/wg-agent/config.toml
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=0
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/run /var/lib/wg-agent
+
+# Required capabilities for WireGuard
+AmbientCapabilities=CAP_NET_ADMIN CAP_IPC_LOCK
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_IPC_LOCK
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=512
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wg-agent
+
+[Install]
+WantedBy=multi-user.target

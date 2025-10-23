@@ -52,6 +52,14 @@ pub enum WgAgentError {
     /// Timeout errors
     #[error("Operation timed out: {0}")]
     Timeout(String),
+
+    /// Security-related errors
+    #[error("Security error: {0}")]
+    Security(String),
+
+    /// Input validation errors
+    #[error("Validation error: {0}")]
+    Validation(String),
 }
 
 /// Result type alias using WgAgentError

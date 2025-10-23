@@ -16,6 +16,7 @@
 //! - `wireguard`: WireGuard protocol and tunnel management
 //! - `control`: Control API for external applications
 //! - `service`: Service/daemon integration
+//! - `security`: Security hardening and privilege management
 //! - `monitoring`: Health checks and metrics
 //! - `error`: Error types and handling
 
@@ -27,6 +28,7 @@ pub mod control;
 pub mod error;
 pub mod monitoring;
 pub mod platform;
+pub mod security;
 pub mod service;
 pub mod wireguard;
 
