@@ -1,4 +1,4 @@
-# Clippy linting configuration for wg-agent
+# Clippy linting configuration for harmony-agent
 
 # Warn on all clippy lints
 warn-on-all-wildcard-imports = true

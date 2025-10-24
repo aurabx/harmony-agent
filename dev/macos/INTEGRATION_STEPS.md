@@ -94,9 +94,9 @@ Use **Option 1** (conditional compilation) because:
 
 ## After Integration
 
-Once done, you can run wg-agent normally:
+Once done, you can run harmony-agent normally:
 ```bash
-sudo ./target/release/wg-agent start --config ./config.toml
+sudo ./target/release/harmony-agent start --config ./config.toml
 ```
 
 And it will automatically use wireguard-go on macOS, boringtun on Linux/Windows.
@@ -105,7 +105,7 @@ And it will automatically use wireguard-go on macOS, boringtun on Linux/Windows.
 
 After making these changes:
 1. Build: `cargo build --release`
-2. Run: `sudo ./target/release/wg-agent start --config ./config.toml`
+2. Run: `sudo ./target/release/harmony-agent start --config ./config.toml`
 3. Test: `ping -c 4 10.100.0.1`
 4. Should see: 0% packet loss
 

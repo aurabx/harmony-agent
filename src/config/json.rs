@@ -197,7 +197,7 @@ mod tests {
                 "interface": "wg0",
                 "mtu": 1420,
                 "dns": ["10.100.0.2"],
-                "privateKeyPath": "/etc/wg-agent/private.key",
+                "privateKeyPath": "/etc/harmony-agent/private.key",
                 "peers": [{
                     "name": "test-peer",
                     "publicKey": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN==",
@@ -249,7 +249,7 @@ mod tests {
             "network": "default",
             "config": {
                 "interface": "wg0",
-                "privateKeyPath": "/etc/wg-agent/private.key",
+                "privateKeyPath": "/etc/harmony-agent/private.key",
                 "http": {
                     "bindAddress": "0.0.0.0",
                     "bindPort": 8081
@@ -276,7 +276,7 @@ mod tests {
                 mtu: 1420,
                 address: Some("10.0.0.2/24".to_string()),
                 dns: vec!["10.100.0.2".to_string()],
-                private_key_path: "/etc/wg-agent/private.key".to_string(),
+                private_key_path: "/etc/harmony-agent/private.key".to_string(),
                 peers: vec![],
                 http: None,
             }),
@@ -294,7 +294,7 @@ mod tests {
             mtu: 1420,
             address: Some("10.0.0.1/24".to_string()),
             dns: vec!["10.100.0.2".to_string()],
-            private_key_path: "/etc/wg-agent/private.key".to_string(),
+            private_key_path: "/etc/harmony-agent/private.key".to_string(),
             peers: vec![],
             http: None,
         };

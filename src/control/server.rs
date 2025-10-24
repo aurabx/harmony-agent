@@ -12,11 +12,11 @@ use tracing::{debug, error, info};
 
 /// Default socket path for Unix systems
 #[cfg(unix)]
-pub const DEFAULT_SOCKET_PATH: &str = "/var/run/wg-agent.sock";
+pub const DEFAULT_SOCKET_PATH: &str = "/var/run/harmony-agent.sock";
 
 /// Default pipe name for Windows
 #[cfg(windows)]
-pub const DEFAULT_PIPE_NAME: &str = r"\\.\pipe\wg-agent";
+pub const DEFAULT_PIPE_NAME: &str = r"\\.\pipe\harmony-agent";
 
 /// Control server manages the control API socket/pipe
 pub struct ControlServer {

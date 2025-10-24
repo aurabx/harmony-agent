@@ -1,8 +1,8 @@
-# wg-agent User Guide
+# harmony-agent User Guide
 
 ## Introduction
 
-**wg-agent** is a cross-platform WireGuard network agent designed to manage WireGuard tunnels on behalf of Harmony. It runs as a standalone daemon, isolating privileged network operations from the main application while providing a consistent API across Linux, Windows, macOS, Docker, and Kubernetes.
+**harmony-agent** is a cross-platform WireGuard network agent designed to manage WireGuard tunnels on behalf of Harmony. It runs as a standalone daemon, isolating privileged network operations from the main application while providing a consistent API across Linux, Windows, macOS, Docker, and Kubernetes.
 
 ## Features
 
@@ -28,48 +28,48 @@ Download the latest release for your platform:
 
 ```bash
 # Linux (x86_64)
-curl -L https://github.com/aurabx/wg-agent/releases/latest/download/wg-agent-linux-x86_64.tar.gz | tar xz
-sudo mv wg-agent /usr/local/bin/
-sudo chmod +x /usr/local/bin/wg-agent
+curl -L https://github.com/aurabx/harmony-agent/releases/latest/download/harmony-agent-linux-x86_64.tar.gz | tar xz
+sudo mv harmony-agent /usr/local/bin/
+sudo chmod +x /usr/local/bin/harmony-agent
 
 # macOS (Apple Silicon)
-curl -L https://github.com/aurabx/wg-agent/releases/latest/download/wg-agent-macos-aarch64.tar.gz | tar xz
-sudo mv wg-agent /usr/local/bin/
-sudo chmod +x /usr/local/bin/wg-agent
+curl -L https://github.com/aurabx/harmony-agent/releases/latest/download/harmony-agent-macos-aarch64.tar.gz | tar xz
+sudo mv harmony-agent /usr/local/bin/
+sudo chmod +x /usr/local/bin/harmony-agent
 ```
 
 ### From Source
 
 ```bash
 # Clone repository
-git clone https://github.com/aurabx/wg-agent.git
-cd wg-agent
+git clone https://github.com/aurabx/harmony-agent.git
+cd harmony-agent
 
 # Build release binary
 cargo build --release
 
 # Install
-sudo cp target/release/wg-agent /usr/local/bin/
+sudo cp target/release/harmony-agent /usr/local/bin/
 ```
 
 ### Using Docker
 
 ```bash
-docker pull ghcr.io/aurabx/wg-agent:latest
+docker pull ghcr.io/aurabx/harmony-agent:latest
 ```
 
 ## Quick Start
 
 ### 1. Create Configuration
 
-Create `/etc/wg-agent/config.toml`:
+Create `/etc/harmony-agent/config.toml`:
 
 ```toml
 [network.default]
 enable_wireguard = true
 interface = "wg0"
 mtu = 1420
-private_key_path = "/etc/wg-agent/private.key"
+private_key_path = "/etc/harmony-agent/private.key"
 dns = ["10.100.0.2"]
 
 [[network.peers]]
@@ -84,31 +84,31 @@ persistent_keepalive_secs = 25
 
 ```bash
 # Generate private key
-wg genkey > /etc/wg-agent/private.key
-chmod 600 /etc/wg-agent/private.key
+wg genkey > /etc/harmony-agent/private.key
+chmod 600 /etc/harmony-agent/private.key
 
 # Derive public key
-wg pubkey < /etc/wg-agent/private.key > /etc/wg-agent/public.key
+wg pubkey < /etc/harmony-agent/private.key > /etc/harmony-agent/public.key
 ```
 
 ### 3. Start Agent
 
 ```bash
 # Foreground (for testing)
-sudo wg-agent start --config /etc/wg-agent/config.toml
+sudo harmony-agent start --config /etc/harmony-agent/config.toml
 
 # As systemd service (Linux)
-sudo systemctl start wg-agent
+sudo systemctl start harmony-agent
 
 # As LaunchDaemon (macOS)
-sudo launchctl load /Library/LaunchDaemons/cloud.runbeam.wg-agent.plist
+sudo launchctl load /Library/LaunchDaemons/cloud.runbeam.harmony-agent.plist
 ```
 
 ### 4. Verify Connection
 
 ```bash
 # Check status
-wg-agent status
+harmony-agent status
 
 # View metrics
 curl http://localhost:9090/metrics
@@ -128,7 +128,7 @@ The agent uses TOML for static configuration. Multiple networks can be defined:
 enable_wireguard = true
 interface = "wg0"
 mtu = 1420
-private_key_path = "/etc/wg-agent/prod.key"
+private_key_path = "/etc/harmony-agent/prod.key"
 dns = ["10.0.0.1", "10.0.0.2"]
 
 [[network.peers]]
@@ -149,7 +149,7 @@ persistent_keepalive_secs = 25
 enable_wireguard = true
 interface = "wg1"
 mtu = 1280
-private_key_path = "/etc/wg-agent/staging.key"
+private_key_path = "/etc/harmony-agent/staging.key"
 dns = ["10.1.0.1"]
 
 [[network.staging.peers]]
@@ -171,7 +171,7 @@ For dynamic control via Harmony or other applications:
   "config": {
     "interface": "wg0",
     "mtu": 1420,
-    "privateKeyPath": "/etc/wg-agent/private.key",
+    "privateKeyPath": "/etc/harmony-agent/private.key",
     "dns": ["10.100.0.2"],
     "peers": [
       {
@@ -190,25 +190,25 @@ For dynamic control via Harmony or other applications:
 
 ### Unix Socket (Linux/macOS)
 
-Default socket: `/var/run/wg-agent.sock`
+Default socket: `/var/run/harmony-agent.sock`
 
 ```bash
 # Connect network
 echo '{"id":"1","action":"connect","network":"default"}' | \
-  socat - UNIX-CONNECT:/var/run/wg-agent.sock
+  socat - UNIX-CONNECT:/var/run/harmony-agent.sock
 
 # Get status
 echo '{"id":"2","action":"status","network":"default"}' | \
-  socat - UNIX-CONNECT:/var/run/wg-agent.sock
+  socat - UNIX-CONNECT:/var/run/harmony-agent.sock
 
 # Disconnect
 echo '{"id":"3","action":"disconnect","network":"default"}' | \
-  socat - UNIX-CONNECT:/var/run/wg-agent.sock
+  socat - UNIX-CONNECT:/var/run/harmony-agent.sock
 ```
 
 ### Named Pipe (Windows)
 
-Default pipe: `\\.\pipe\wg-agent`
+Default pipe: `\\.\pipe\harmony-agent`
 
 ```powershell
 # PowerShell example
@@ -218,7 +218,7 @@ $request = @{
     network = "default"
 } | ConvertTo-Json
 
-$pipe = New-Object System.IO.Pipes.NamedPipeClientStream(".", "wg-agent", [System.IO.Pipes.PipeDirection]::InOut)
+$pipe = New-Object System.IO.Pipes.NamedPipeClientStream(".", "harmony-agent", [System.IO.Pipes.PipeDirection]::InOut)
 $pipe.Connect()
 # ... (send request and read response)
 ```
@@ -253,17 +253,17 @@ curl http://localhost:9090/healthz
 curl http://localhost:9090/metrics
 
 # Example metrics
-wg_agent_bytes_transmitted_total 1048576
-wg_agent_bytes_received_total 2097152
-wg_agent_active_peers 3
-wg_agent_handshake_success_total 150
-wg_agent_handshake_failure_total 2
-wg_agent_connection_uptime_seconds 3600
+harmony_agent_bytes_transmitted_total 1048576
+harmony_agent_bytes_received_total 2097152
+harmony_agent_active_peers 3
+harmony_agent_handshake_success_total 150
+harmony_agent_handshake_failure_total 2
+harmony_agent_connection_uptime_seconds 3600
 ```
 
 ### Grafana Dashboard
 
-Import the provided Grafana dashboard from `deploy/grafana/wg-agent-dashboard.json` for visualization.
+Import the provided Grafana dashboard from `deploy/grafana/harmony-agent-dashboard.json` for visualization.
 
 ## Security
 
@@ -271,13 +271,13 @@ Import the provided Grafana dashboard from `deploy/grafana/wg-agent-dashboard.js
 
 ```bash
 # Private keys must be 0600
-sudo chmod 600 /etc/wg-agent/*.key
+sudo chmod 600 /etc/harmony-agent/*.key
 
 # Configuration can be 0640
-sudo chmod 640 /etc/wg-agent/config.toml
+sudo chmod 640 /etc/harmony-agent/config.toml
 
 # Socket should be 0660
-sudo chmod 660 /var/run/wg-agent.sock
+sudo chmod 660 /var/run/harmony-agent.sock
 ```
 
 ### Privilege Dropping
@@ -286,9 +286,9 @@ The agent starts with elevated privileges to create TUN devices, then drops to a
 
 ```bash
 # Run as specific user (Linux)
-sudo -u wg-agent wg-agent start --config /etc/wg-agent/config.toml
+sudo -u harmony-agent harmony-agent start --config /etc/harmony-agent/config.toml
 
-# Systemd service runs as User=wg-agent
+# Systemd service runs as User=harmony-agent
 ```
 
 ### Memory Locking
@@ -297,7 +297,7 @@ The agent locks memory to prevent key material from swapping to disk:
 
 ```bash
 # Requires IPC_LOCK capability
-sudo setcap cap_net_admin,cap_ipc_lock=+eip /usr/local/bin/wg-agent
+sudo setcap cap_net_admin,cap_ipc_lock=+eip /usr/local/bin/harmony-agent
 ```
 
 ## Troubleshooting
@@ -307,15 +307,15 @@ sudo setcap cap_net_admin,cap_ipc_lock=+eip /usr/local/bin/wg-agent
 **Check logs:**
 ```bash
 # Systemd
-sudo journalctl -u wg-agent -f
+sudo journalctl -u harmony-agent -f
 
 # Direct run with verbose logging
-sudo wg-agent start --config /etc/wg-agent/config.toml --verbose
+sudo harmony-agent start --config /etc/harmony-agent/config.toml --verbose
 ```
 
 **Common issues:**
-- Missing capabilities: `setcap cap_net_admin,cap_ipc_lock=+eip /usr/local/bin/wg-agent`
-- Invalid configuration: `wg-agent validate --config /etc/wg-agent/config.toml`
+- Missing capabilities: `setcap cap_net_admin,cap_ipc_lock=+eip /usr/local/bin/harmony-agent`
+- Invalid configuration: `harmony-agent validate --config /etc/harmony-agent/config.toml`
 - Port conflicts: Check if another process is using the WireGuard port
 
 ### Connection Not Establishing
@@ -365,18 +365,18 @@ watch -n 1 'curl -s http://localhost:9090/metrics | grep peer_latency'
 
 ```bash
 # Generate new key
-wg genkey > /etc/wg-agent/new-private.key
+wg genkey > /etc/harmony-agent/new-private.key
 
 # Update configuration
-sudo nano /etc/wg-agent/config.toml
+sudo nano /etc/harmony-agent/config.toml
 
 # Reload agent
-sudo systemctl reload wg-agent
+sudo systemctl reload harmony-agent
 ```
 
 ## Best Practices
 
-1. **Use Dedicated User**: Run agent as `wg-agent` user, not root
+1. **Use Dedicated User**: Run agent as `harmony-agent` user, not root
 2. **Secure Keys**: Store keys with 0600 permissions, use hardware security modules if available
 3. **Monitor Health**: Set up alerts on handshake failures and peer health
 4. **Regular Updates**: Keep agent and dependencies updated
@@ -419,9 +419,9 @@ interface = "wg1"
 
 ## Support
 
-- **Documentation**: https://docs.runbeam.cloud/wg-agent
-- **Issues**: https://github.com/aurabx/wg-agent/issues
-- **Discussions**: https://github.com/aurabx/wg-agent/discussions
+- **Documentation**: https://docs.runbeam.cloud/harmony-agent
+- **Issues**: https://github.com/aurabx/harmony-agent/issues
+- **Discussions**: https://github.com/aurabx/harmony-agent/discussions
 - **Security**: security@aurabox.cloud
 
 ## License

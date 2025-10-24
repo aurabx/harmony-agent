@@ -1,10 +1,10 @@
-# wg-agent API Documentation
+# harmony-agent API Documentation
 
-This document describes the APIs available for integrating wg-agent into other applications (Aurabox, JMIX, Harmony, etc.).
+This document describes the APIs available for integrating harmony-agent into other applications (Aurabox, JMIX, Harmony, etc.).
 
 ## Overview
 
-wg-agent provides three ways to interact with it:
+harmony-agent provides three ways to interact with it:
 
 1. **Control API** - JSON-based API over Unix sockets (Linux/macOS) or Named Pipes (Windows)
 2. **HTTP API** - Metrics and health check endpoints (read-only)
@@ -12,19 +12,19 @@ wg-agent provides three ways to interact with it:
 
 ## Control API (Primary Integration Method)
 
-The Control API is the recommended way for applications to control wg-agent. It allows dynamic management of WireGuard tunnels at runtime.
+The Control API is the recommended way for applications to control harmony-agent. It allows dynamic management of WireGuard tunnels at runtime.
 
 ### Connection
 
 **Unix/Linux/macOS:**
 ```
-Unix Socket: /var/run/wg-agent.sock
+Unix Socket: /var/run/harmony-agent.sock
 Protocol: Line-delimited JSON over Unix domain socket
 ```
 
 **Windows:**
 ```
-Named Pipe: \\.\pipe\wg-agent
+Named Pipe: \\.\pipe\harmony-agent
 Protocol: Line-delimited JSON
 ```
 
@@ -109,7 +109,7 @@ Establish a WireGuard tunnel for a network.
     "mtu": 1420,
     "address": "10.100.0.2/24",
     "dns": ["1.1.1.1", "8.8.8.8"],
-    "privateKeyPath": "/etc/wg-agent/private.key",
+    "privateKeyPath": "/etc/harmony-agent/private.key",
     "peers": [
       {
         "name": "runbeam-core",
@@ -313,7 +313,7 @@ use serde_json::json;
 
 async fn connect_wireguard() -> anyhow::Result<()> {
     // Connect to Unix socket
-    let stream = UnixStream::connect("/var/run/wg-agent.sock").await?;
+    let stream = UnixStream::connect("/var/run/harmony-agent.sock").await?;
     let (reader, mut writer) = stream.into_split();
     let mut reader = BufReader::new(reader);
     
@@ -370,7 +370,7 @@ import socket
 def connect_wireguard():
     # Connect to Unix socket
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.connect("/var/run/wg-agent.sock")
+    sock.connect("/var/run/harmony-agent.sock")
     
     # Prepare request
     request = {
@@ -440,7 +440,7 @@ type Response struct {
 
 func connectWireGuard() error {
     // Connect to Unix socket
-    conn, err := net.Dial("unix", "/var/run/wg-agent.sock")
+    conn, err := net.Dial("unix", "/var/run/harmony-agent.sock")
     if err != nil {
         return err
     }
@@ -537,7 +537,7 @@ interface WgAgentResponse {
 async function connectWireGuard(): Promise<void> {
   return new Promise((resolve, reject) => {
     // Connect to Unix socket
-    const client = net.connect('/var/run/wg-agent.sock');
+    const client = net.connect('/var/run/harmony-agent.sock');
     
     client.on('connect', () => {
       // Prepare request
@@ -626,9 +626,9 @@ Prometheus-compatible metrics endpoint.
 HTTP/1.1 200 OK
 Content-Type: text/plain; version=0.0.4
 
-# HELP wg_agent_info Agent information
-# TYPE wg_agent_info gauge
-wg_agent_info{version="0.1.0"} 1
+# HELP harmony_agent_info Agent information
+# TYPE harmony_agent_info gauge
+harmony_agent_info{version="0.1.0"} 1
 
 # HELP wg_network_state Network connection state (0=disconnected, 1=connecting, 2=connected, 3=degraded, 4=failed)
 # TYPE wg_network_state gauge
@@ -655,7 +655,7 @@ wg_peers_active{network="default"} 1
 
 | Metric | Type | Labels | Description |
 |--------|------|--------|-------------|
-| `wg_agent_info` | gauge | version | Agent version information |
+| `harmony_agent_info` | gauge | version | Agent version information |
 | `wg_network_state` | gauge | network | Connection state (0-4) |
 | `wg_bytes_transmitted` | counter | network | Total bytes transmitted |
 | `wg_bytes_received` | counter | network | Total bytes received |
@@ -678,7 +678,7 @@ wg_peers_active{network="default"} 1
 
 ```yaml
 scrape_configs:
-  - job_name: 'wg-agent'
+  - job_name: 'harmony-agent'
     static_configs:
       - targets: ['localhost:9090']
     scrape_interval: 15s
@@ -704,11 +704,11 @@ wg_peers_active{network="default"} / wg_peers_total{network="default"}
 
 ## Configuration File Format (TOML)
 
-For static configuration at startup, wg-agent uses TOML format.
+For static configuration at startup, harmony-agent uses TOML format.
 
 ### File Location
 
-Default: `/etc/wg-agent/config.toml`
+Default: `/etc/harmony-agent/config.toml`
 
 Override with: `--config` flag
 
@@ -721,7 +721,7 @@ enable_wireguard = true
 interface = "wg0"
 mtu = 1420
 address = "10.100.0.2/24"
-private_key_path = "/etc/wg-agent/private.key"
+private_key_path = "/etc/harmony-agent/private.key"
 dns = ["1.1.1.1", "8.8.8.8"]
 
 [[network.peers]]
@@ -737,7 +737,7 @@ enable_wireguard = true
 interface = "wg1"
 mtu = 1280
 address = "10.200.0.2/24"
-private_key_path = "/etc/wg-agent/prod-key"
+private_key_path = "/etc/harmony-agent/prod-key"
 
 [[network.production.peers]]
 name = "prod-gateway"
@@ -766,7 +766,7 @@ See [Connect Action](#1-connect) for field descriptions. The TOML format uses sn
    - Use secure key management systems in production
 
 3. **Process Privileges:**
-   - wg-agent requires `NET_ADMIN` and `IPC_LOCK` capabilities on Linux
+   - harmony-agent requires `NET_ADMIN` and `IPC_LOCK` capabilities on Linux
    - Run as root or with appropriate capabilities
    - Consider using systemd service hardening
 
@@ -794,7 +794,7 @@ Current version: No authentication required for socket connections.
 use tokio::net::UnixStream;
 
 pub async fn setup_wireguard_tunnel(config: &AuraboxConfig) -> Result<()> {
-    let stream = UnixStream::connect("/var/run/wg-agent.sock").await?;
+    let stream = UnixStream::connect("/var/run/harmony-agent.sock").await?;
     
     let request = ApiRequest {
         id: format!("aurabox-{}", uuid::Uuid::new_v4()),
@@ -813,10 +813,10 @@ pub async fn setup_wireguard_tunnel(config: &AuraboxConfig) -> Result<()> {
 
 ```typescript
 // In JMIX CLI
-import { WgAgentClient } from './wg-agent-client';
+import { WgAgentClient } from './harmony-agent-client';
 
 async function enableVPN() {
-  const client = new WgAgentClient('/var/run/wg-agent.sock');
+  const client = new WgAgentClient('/var/run/harmony-agent.sock');
   
   const response = await client.connect({
     network: 'jmix-vpn',
@@ -841,7 +841,7 @@ async function enableVPN() {
 ```go
 // In Harmony proxy
 func (h *Harmony) ConfigureWireGuard(cfg *Config) error {
-    conn, err := net.Dial("unix", "/var/run/wg-agent.sock")
+    conn, err := net.Dial("unix", "/var/run/harmony-agent.sock")
     if err != nil {
         return err
     }
@@ -866,15 +866,15 @@ func (h *Harmony) ConfigureWireGuard(cfg *Config) error {
 **Problem:** Connection refused to socket
 
 **Solutions:**
-- Check wg-agent is running: `systemctl status wg-agent`
-- Verify socket exists: `ls -l /var/run/wg-agent.sock`
+- Check harmony-agent is running: `systemctl status harmony-agent`
+- Verify socket exists: `ls -l /var/run/harmony-agent.sock`
 - Check permissions on socket file
 
 **Problem:** Permission denied errors
 
 **Solutions:**
-- Ensure wg-agent has NET_ADMIN capability
-- Run agent as root: `sudo wg-agent start`
+- Ensure harmony-agent has NET_ADMIN capability
+- Run agent as root: `sudo harmony-agent start`
 - Check private key file permissions (should be 0600)
 
 **Problem:** Network not found error
@@ -887,7 +887,7 @@ func (h *Harmony) ConfigureWireGuard(cfg *Config) error {
 **Problem:** Tunnel state stuck in "starting"
 
 **Solutions:**
-- Check logs: `journalctl -u wg-agent -f`
+- Check logs: `journalctl -u harmony-agent -f`
 - Verify peer endpoint is reachable
 - Confirm private key format is correct
 - Check firewall rules allow UDP port 51820
@@ -916,6 +916,6 @@ func (h *Harmony) ConfigureWireGuard(cfg *Config) error {
 ## Support
 
 For issues, questions, or contributions:
-- GitHub Issues: [runbeam/wg-agent](https://github.com/runbeam/wg-agent)
+- GitHub Issues: [runbeam/harmony-agent](https://github.com/runbeam/harmony-agent)
 - Documentation: See `docs/` directory
 - Examples: See `examples/` directory

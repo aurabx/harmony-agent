@@ -1,6 +1,6 @@
 # Testing Linux Implementation
 
-This document describes how to test the wg-agent Linux implementation, particularly when developing on macOS or other non-Linux platforms.
+This document describes how to test the harmony-agent Linux implementation, particularly when developing on macOS or other non-Linux platforms.
 
 ## Quick Start
 
@@ -77,21 +77,21 @@ EOF
 
 ```bash
 # Build test container
-docker build -f dev/linux/Dockerfile.test -t wg-agent-test .
+docker build -f dev/linux/Dockerfile.test -t harmony-agent-test .
 
 # Run tests (requires privileged mode for network operations)
 docker run --rm \
     --privileged \
     --cap-add=NET_ADMIN \
     --cap-add=IPC_LOCK \
-    wg-agent-test
+    harmony-agent-test
 
 # Run tests with output
 docker run --rm \
     --privileged \
     --cap-add=NET_ADMIN \
     --cap-add=IPC_LOCK \
-    wg-agent-test \
+    harmony-agent-test \
     cargo test --lib -- --nocapture
 
 # Interactive shell for debugging
@@ -99,7 +99,7 @@ docker run -it --rm \
     --privileged \
     --cap-add=NET_ADMIN \
     --cap-add=IPC_LOCK \
-    wg-agent-test \
+    harmony-agent-test \
     /bin/bash
 ```
 
@@ -121,7 +121,7 @@ multipass launch --name wg-test \
     22.04
 
 # Transfer code to VM
-multipass mount . wg-test:/home/ubuntu/wg-agent
+multipass mount . wg-test:/home/ubuntu/harmony-agent
 
 # Access VM
 multipass shell wg-test
@@ -140,7 +140,7 @@ sudo apt-get install -y \
     resolvconf
 
 # Inside VM - run tests
-cd /home/ubuntu/wg-agent
+cd /home/ubuntu/harmony-agent
 cargo test --lib
 cargo build --release
 
@@ -169,7 +169,7 @@ Vagrant.configure("2") do |config|
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo -u vagrant sh
   SHELL
   
-  config.vm.synced_folder "../..", "/home/vagrant/wg-agent"
+  config.vm.synced_folder "../..", "/home/vagrant/harmony-agent"
 end
 EOF
 
@@ -181,7 +181,7 @@ vagrant up
 vagrant ssh
 
 # Inside VM
-cd wg-agent
+cd harmony-agent
 cargo test --lib
 cargo build --release
 ```
@@ -245,7 +245,7 @@ cargo build --release
 sudo wg-quick up ./tmp/test-config/peer.conf
 
 # Terminal 2: Start agent with test config
-sudo ./target/release/wg-agent \
+sudo ./target/release/harmony-agent \
     -c ./tmp/test-config/config.toml \
     --verbose \
     start
@@ -266,7 +266,7 @@ curl http://127.0.0.1:9090/metrics
 ping -c 3 10.100.0.1
 
 # Cleanup
-sudo ./target/release/wg-agent stop
+sudo ./target/release/harmony-agent stop
 sudo wg-quick down ./tmp/test-config/peer.conf
 ```
 
@@ -285,7 +285,7 @@ cargo check --target x86_64-unknown-linux-gnu
 cargo build --release --target x86_64-unknown-linux-gnu
 
 # The binary will be at:
-# target/x86_64-unknown-linux-gnu/release/wg-agent
+# target/x86_64-unknown-linux-gnu/release/harmony-agent
 ```
 
 ### 6. Static Analysis and Code Quality
@@ -310,7 +310,7 @@ cargo audit
 
 ```bash
 # Verify TUN device is created correctly
-sudo ./target/release/wg-agent -c config.toml start
+sudo ./target/release/harmony-agent -c config.toml start
 
 # Check interface exists
 ip link show wg0
@@ -361,7 +361,7 @@ curl -s http://127.0.0.1:9090/healthz
 curl -s http://127.0.0.1:9090/metrics | grep wg_
 
 # Expected metrics:
-# wg_agent_info{version="0.1.0"} 1
+# harmony_agent_info{version="0.1.0"} 1
 # wg_network_state{network="test"} 2
 # wg_bytes_transmitted{network="test"} ...
 # wg_bytes_received{network="test"} ...
@@ -371,7 +371,7 @@ curl -s http://127.0.0.1:9090/metrics | grep wg_
 
 ```bash
 # Send SIGTERM
-sudo kill -TERM $(pidof wg-agent)
+sudo kill -TERM $(pidof harmony-agent)
 
 # Or Ctrl+C
 
@@ -389,10 +389,10 @@ resolvconf -l wg0 # Should be empty or not exist
 ```bash
 # Error: Failed to create TUN device: Permission denied
 # Solution: Run with sudo or CAP_NET_ADMIN
-sudo ./target/release/wg-agent start
+sudo ./target/release/harmony-agent start
 
 # Or use capabilities:
-sudo setcap cap_net_admin,cap_ipc_lock=eip ./target/release/wg-agent
+sudo setcap cap_net_admin,cap_ipc_lock=eip ./target/release/harmony-agent
 ```
 
 #### Interface Already Exists
@@ -418,14 +418,14 @@ sudo apt-get install resolvconf
 
 ```bash
 # Enable verbose logging
-sudo ./target/release/wg-agent -v start
+sudo ./target/release/harmony-agent -v start
 
 # Or set environment variable
 export RUST_LOG=debug
-sudo -E ./target/release/wg-agent start
+sudo -E ./target/release/harmony-agent start
 
 # Check specific modules
-export RUST_LOG=wg_agent::wireguard=trace,wg_agent::platform::linux=debug
+export RUST_LOG=harmony_agent::wireguard=trace,harmony_agent::platform::linux=debug
 ```
 
 ### Verify Platform Detection

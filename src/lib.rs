@@ -1,4 +1,4 @@
-//! wg-agent: Cross-platform WireGuard network agent
+//! harmony-agent: Cross-platform WireGuard network agent
 //!
 //! This library provides a portable WireGuard tunnel management system that works
 //! across Linux, Windows, macOS, Docker, and Kubernetes environments.

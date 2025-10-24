@@ -22,7 +22,7 @@ The `tun` crate v0.6 doesn't fully support macOS `utun` devices. Packets were be
 
 ### Key Evidence
 - Server showed 32% RX errors when receiving packets from boringtun client
-- wg-agent logs showed "Wrote 84 bytes to TUN device" but Mac didn't respond
+- harmony-agent logs showed "Wrote 84 bytes to TUN device" but Mac didn't respond
 - Changing interface configuration (point-to-point destination) had no effect
 - Firewall wasn't the issue
 
@@ -43,7 +43,7 @@ Using `wireguard-go` with the same configuration:
 ## Implementation
 
 ### For macOS (Development)
-- wg-agent uses `wireguard-go` subprocess
+- harmony-agent uses `wireguard-go` subprocess
 - Requires `brew install wireguard-tools`
 - Config file generated and applied via `wg setconf`
 
@@ -61,7 +61,7 @@ Using `wireguard-go` with the same configuration:
 ## Next Steps
 1. Integrate `MacOsWgDevice` into the tunnel management system
 2. Add conditional compilation to use `MacOsWgDevice` on macOS, `WgDevice` elsewhere
-3. Test full wg-agent functionality with wireguard-go backend
+3. Test full harmony-agent functionality with wireguard-go backend
 4. Update CI/CD to handle platform-specific builds
 
 ## Lessons Learned

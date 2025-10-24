@@ -45,9 +45,9 @@ echo ""
 echo "🔗 Adding client as peer to server..."
 docker exec wg-test-server wg set wg0 peer "$CLIENT_PUBKEY" allowed-ips 10.100.0.2/32
 
-# Create wg-agent config
+# Create harmony-agent config
 echo ""
-echo "📝 Creating wg-agent config..."
+echo "📝 Creating harmony-agent config..."
 cat > "$PROJECT_ROOT/config.toml" << EOF
 listen_address = "127.0.0.1:8080"
 
@@ -72,7 +72,7 @@ echo "✅ Setup complete!"
 echo ""
 echo "📦 Next steps:"
 echo "1. Build: cd $PROJECT_ROOT && cargo build --release"
-echo "2. Run:   cd $PROJECT_ROOT && sudo ./target/release/wg-agent"
+echo "2. Run:   cd $PROJECT_ROOT && sudo ./target/release/harmony-agent"
 echo "3. Test:  ./examples/verify-connection.sh"
 echo "4. Ping:  ping 10.100.0.1"
 echo ""

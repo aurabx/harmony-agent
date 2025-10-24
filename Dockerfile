@@ -1,7 +1,7 @@
-# Multi-stage Dockerfile for wg-agent
+# Multi-stage Dockerfile for harmony-agent
 FROM rust:1.75-slim as builder
 
-WORKDIR /usr/src/wg-agent
+WORKDIR /usr/src/harmony-agent
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -31,19 +31,19 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy binary from builder
-COPY --from=builder /usr/src/wg-agent/target/release/wg-agent /usr/local/bin/wg-agent
+COPY --from=builder /usr/src/harmony-agent/target/release/harmony-agent /usr/local/bin/harmony-agent
 
 # Create config directory
-RUN mkdir -p /etc/wg-agent
+RUN mkdir -p /etc/harmony-agent
 
 # Add capabilities for WireGuard
-RUN setcap cap_net_admin,cap_ipc_lock=+eip /usr/local/bin/wg-agent || true
+RUN setcap cap_net_admin,cap_ipc_lock=+eip /usr/local/bin/harmony-agent || true
 
 # Create non-root user
-RUN useradd -r -s /bin/false wg-agent
+RUN useradd -r -s /bin/false harmony-agent
 
 # Set user
-USER wg-agent
+USER harmony-agent
 
-ENTRYPOINT ["/usr/local/bin/wg-agent"]
-CMD ["start", "--config", "/etc/wg-agent/config.toml"]
+ENTRYPOINT ["/usr/local/bin/harmony-agent"]
+CMD ["start", "--config", "/etc/harmony-agent/config.toml"]

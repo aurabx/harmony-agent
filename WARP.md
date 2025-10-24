@@ -4,7 +4,7 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Project Overview
 
-**wg-agent** is a cross-platform WireGuard network agent written in Rust. It's designed as a standalone daemon that manages WireGuard tunnels on behalf of other applications (Aurabox, JMIX, Runbeam). The agent isolates privileged network operations from the main application while providing a consistent API across Linux, Windows, macOS, Docker, and Kubernetes.
+**harmony-agent** is a cross-platform WireGuard network agent written in Rust. It's designed as a standalone daemon that manages WireGuard tunnels on behalf of other applications (Aurabox, JMIX, Runbeam). The agent isolates privileged network operations from the main application while providing a consistent API across Linux, Windows, macOS, Docker, and Kubernetes.
 
 ## Build & Development Commands
 
@@ -164,7 +164,7 @@ persistent_keepalive_secs = 25
 ## Project Structure
 
 ```
-wg-agent/
+harmony-agent/
 ├── src/
 │   └── main.rs          # Entry point (currently minimal)
 ├── docs/

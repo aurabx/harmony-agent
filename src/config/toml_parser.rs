@@ -180,7 +180,7 @@ mod tests {
             enable_wireguard = true
             interface = "wg0"
             mtu = 1420
-            private_key_path = "/etc/wg-agent/private.key"
+            private_key_path = "/etc/harmony-agent/private.key"
             dns = ["10.100.0.2"]
 
             [[network.default.peers]]
@@ -209,7 +209,7 @@ mod tests {
             enable_wireguard = true
             interface = "wg0"
             mtu = 1280
-            private_key_path = "/etc/wg-agent/private.key"
+            private_key_path = "/etc/harmony-agent/private.key"
 
             [network.default.http]
             bind_address = "0.0.0.0"
@@ -231,12 +231,12 @@ mod tests {
             [network.default]
             enable_wireguard = true
             interface = "wg0"
-            private_key_path = "/etc/wg-agent/default.key"
+            private_key_path = "/etc/harmony-agent/default.key"
 
             [network.production]
             enable_wireguard = true
             interface = "wg1"
-            private_key_path = "/etc/wg-agent/prod.key"
+            private_key_path = "/etc/harmony-agent/prod.key"
         "#;
 
         let config = TomlConfig::parse(toml).expect("Failed to parse TOML");
@@ -249,7 +249,7 @@ mod tests {
     fn test_parse_with_defaults() {
         let toml = r#"
             [network.minimal]
-            private_key_path = "/etc/wg-agent/private.key"
+            private_key_path = "/etc/harmony-agent/private.key"
         "#;
 
         let config = TomlConfig::parse(toml).expect("Failed to parse TOML");
@@ -270,7 +270,7 @@ mod tests {
             enable_wireguard = true
             interface = "wg0"
             mtu = 1420
-            private_key_path = "/etc/wg-agent/private.key"
+            private_key_path = "/etc/harmony-agent/private.key"
         "#;
 
         let toml_config = TomlConfig::parse(toml).expect("Failed to parse TOML");

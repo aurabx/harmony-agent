@@ -1,14 +1,14 @@
 #!/bin/bash
 
-echo "=== wg-agent Quick Functional Test ==="
+echo "=== harmony-agent Quick Functional Test ==="
 echo ""
 
 echo "✓ Step 1: Binary built successfully"
-./target/release/wg-agent --version
+./target/release/harmony-agent --version
 echo ""
 
 echo "✓ Step 2: Agent starts and detects service mode"
-./target/release/wg-agent start --config ./tmp/test-config/config.toml --verbose 2>&1 | head -15 &
+./target/release/harmony-agent start --config ./tmp/test-config/config.toml --verbose 2>&1 | head -15 &
 AGENT_PID=$!
 sleep 1
 echo ""

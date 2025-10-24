@@ -1,10 +1,10 @@
-//! Integration tests for wg-agent
+//! Integration tests for harmony-agent
 //!
 //! These tests verify the interaction between different modules.
 
-use wg_agent::config::{Config, NetworkConfig, PeerConfig};
-use wg_agent::monitoring::{ConnectionState, Monitor};
-use wg_agent::security::{validate_interface_name, validate_network_name};
+use harmony_agent::config::{Config, NetworkConfig, PeerConfig};
+use harmony_agent::monitoring::{ConnectionState, Monitor};
+use harmony_agent::security::{validate_interface_name, validate_network_name};
 
 #[test]
 fn test_config_integration() {
@@ -172,9 +172,9 @@ fn test_metrics_export() {
     let metrics = monitor.metrics();
     let prometheus = metrics.export_prometheus();
     
-    assert!(prometheus.contains("wg_agent_bytes_transmitted_total"));
-    assert!(prometheus.contains("wg_agent_bytes_received_total"));
-    assert!(prometheus.contains("wg_agent_active_peers"));
+    assert!(prometheus.contains("harmony_agent_bytes_transmitted_total"));
+    assert!(prometheus.contains("harmony_agent_bytes_received_total"));
+    assert!(prometheus.contains("harmony_agent_active_peers"));
     
     let json = metrics.export_json();
     assert!(json.is_object());

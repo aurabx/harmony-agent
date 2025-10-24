@@ -4,15 +4,15 @@ echo "🔍 WireGuard Connection Verification"
 echo "===================================="
 echo ""
 
-# Check if wg-agent is running
+# Check if harmony-agent is running
 if ! curl -s http://127.0.0.1:8080/metrics > /dev/null 2>&1; then
-    echo "❌ wg-agent is not running!"
-    echo "   Start with: sudo ./target/release/wg-agent"
+    echo "❌ harmony-agent is not running!"
+    echo "   Start with: sudo ./target/release/harmony-agent"
     exit 1
 fi
 
 # Get metrics
-echo "📊 wg-agent Metrics:"
+echo "📊 harmony-agent Metrics:"
 curl -s http://127.0.0.1:8080/metrics | grep -E "(tunnel_state|peer_)"
 echo ""
 

@@ -1,6 +1,6 @@
 //! Example control API client
 //!
-//! This demonstrates how to interact with the wg-agent control API
+//! This demonstrates how to interact with the harmony-agent control API
 //! from an external application (like Harmony).
 
 use std::io::{BufRead, BufReader, Write};
@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Connect to control socket
-    let socket_path = PathBuf::from("/var/run/wg-agent.sock");
+    let socket_path = PathBuf::from("/var/run/harmony-agent.sock");
     println!("Connecting to {:?}", socket_path);
     
     let mut stream = UnixStream::connect(&socket_path)?;

@@ -9,8 +9,8 @@
 //! Note: These tests require root privileges to create TUN devices.
 //! Run with: sudo -E cargo test --test tunnel_integration
 
-use wg_agent::config::NetworkConfig;
-use wg_agent::wireguard::{KeyPair, Tunnel, TunnelConfig, TunnelState};
+use harmony_agent::config::NetworkConfig;
+use harmony_agent::wireguard::{KeyPair, Tunnel, TunnelConfig, TunnelState};
 use std::time::Duration;
 
 /// Helper function to create a basic tunnel configuration for testing
@@ -36,7 +36,7 @@ fn create_tunnel_config_with_peer() -> TunnelConfig {
     let local_keypair = KeyPair::generate();
     let peer_keypair = KeyPair::generate();
     
-    let peer_config = wg_agent::wireguard::PeerConfig {
+    let peer_config = harmony_agent::wireguard::PeerConfig {
         name: "test-peer".to_string(),
         public_key: peer_keypair.public,
         endpoint: Some("127.0.0.1:51820".parse().unwrap()),
@@ -201,7 +201,7 @@ async fn test_tunnel_from_network_config() {
     keypair.private.save_to_file(&key_path).expect("Failed to save key");
     
     let peer_keypair = KeyPair::generate();
-    let peer_config = wg_agent::config::PeerConfig {
+    let peer_config = harmony_agent::config::PeerConfig {
         name: "test-peer".to_string(),
         public_key: peer_keypair.public.to_base64(),
         endpoint: "127.0.0.1:51820".to_string(),
@@ -266,7 +266,7 @@ async fn test_tunnel_stats() {
 
 #[tokio::test]
 async fn test_peer_config_validation() {
-    use wg_agent::wireguard::PeerConfig;
+    use harmony_agent::wireguard::PeerConfig;
     
     let keypair = KeyPair::generate();
     

@@ -39,7 +39,7 @@ impl MacOsWgDevice {
         }
 
         // Generate WireGuard config file
-        let config_dir = PathBuf::from("/tmp/wg-agent");
+        let config_dir = PathBuf::from("/tmp/harmony-agent");
         fs::create_dir_all(&config_dir).map_err(|e| {
             WgAgentError::Platform(format!("Failed to create config directory: {}", e))
         })?;

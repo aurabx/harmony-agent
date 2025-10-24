@@ -1,4 +1,4 @@
-//! wg-agent main entry point
+//! harmony-agent main entry point
 //!
 //! This binary serves as the main entry point for the WireGuard agent.
 //! It handles CLI parsing, logging setup, and daemon initialization.
@@ -7,7 +7,7 @@ use clap::{Parser, Subcommand};
 use tracing::{error, info};
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
-use wg_agent::{APP_NAME, VERSION, config::Config, service::{create_service, ServiceMode}, monitoring::Monitor};
+use harmony_agent::{APP_NAME, VERSION, config::Config, service::{create_service, ServiceMode}, monitoring::Monitor};
 use std::sync::Arc;
 use axum::{
     routing::get,
@@ -30,7 +30,7 @@ struct Cli {
         short,
         long,
         global = true,
-        default_value = "/etc/wg-agent/config.toml"
+        default_value = "/etc/harmony-agent/config.toml"
     )]
     config: String,
 
@@ -105,7 +105,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 if network.enable_wireguard {
                     info!("Auto-starting WireGuard tunnel for network: {}", name);
                     
-                    match wg_agent::wireguard::Tunnel::from_network_config(network) {
+                    match harmony_agent::wireguard::Tunnel::from_network_config(network) {
                         Ok(tunnel) => {
                             match tunnel.start().await {
                                 Ok(()) => {
@@ -183,20 +183,20 @@ async fn metrics(monitor: Arc<Monitor>) -> impl IntoResponse {
     let mut output = String::new();
     
     // Agent info
-    output.push_str("# HELP wg_agent_info Agent information\n");
-    output.push_str("# TYPE wg_agent_info gauge\n");
-    output.push_str(&format!("wg_agent_info{{version=\"{}\"}} 1\n\n", VERSION));
+    output.push_str("# HELP harmony_agent_info Agent information\n");
+    output.push_str("# TYPE harmony_agent_info gauge\n");
+    output.push_str(&format!("harmony_agent_info{{version=\"{}\"}} 1\n\n", VERSION));
     
     // Network stats
     for (network, stat) in stats.iter() {
         output.push_str(&format!("# HELP wg_network_state Network connection state (0=disconnected, 1=connecting, 2=connected, 3=degraded, 4=failed)\n"));
         output.push_str(&format!("# TYPE wg_network_state gauge\n"));
         let state_value = match stat.state {
-            wg_agent::monitoring::ConnectionState::Disconnected => 0,
-            wg_agent::monitoring::ConnectionState::Connecting => 1,
-            wg_agent::monitoring::ConnectionState::Connected => 2,
-            wg_agent::monitoring::ConnectionState::Degraded => 3,
-            wg_agent::monitoring::ConnectionState::Failed => 4,
+            harmony_agent::monitoring::ConnectionState::Disconnected => 0,
+            harmony_agent::monitoring::ConnectionState::Connecting => 1,
+            harmony_agent::monitoring::ConnectionState::Connected => 2,
+            harmony_agent::monitoring::ConnectionState::Degraded => 3,
+            harmony_agent::monitoring::ConnectionState::Failed => 4,
         };
         output.push_str(&format!("wg_network_state{{network=\"{}\"}} {}\n\n", network, state_value));
         

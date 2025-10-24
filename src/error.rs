@@ -1,4 +1,4 @@
-//! Error types for wg-agent
+//! Error types for harmony-agent
 //!
 //! This module defines the error types used throughout the application.
 //! We use `thiserror` for ergonomic error definitions and `anyhow` for
@@ -6,7 +6,7 @@
 
 use thiserror::Error;
 
-/// Main error type for wg-agent operations
+/// Main error type for harmony-agent operations
 #[derive(Error, Debug)]
 pub enum WgAgentError {
     /// Configuration-related errors

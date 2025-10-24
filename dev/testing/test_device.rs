@@ -3,8 +3,8 @@
 //! This example creates a WireGuard device and verifies it can be initialized.
 //! Run with: cargo run --example test_device
 
-use wg_agent::platform::get_platform;
-use wg_agent::wireguard::{DeviceConfig, KeyPair, PeerConfig, WgDevice};
+use harmony_agent::platform::get_platform;
+use harmony_agent::wireguard::{DeviceConfig, KeyPair, PeerConfig, WgDevice};
 use std::time::Duration;
 
 #[tokio::main]

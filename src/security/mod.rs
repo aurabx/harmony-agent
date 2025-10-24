@@ -158,7 +158,7 @@ impl SecurityEvent {
 /// Check if running in secure mode
 pub fn is_secure_mode() -> bool {
     // Check environment variable
-    if let Ok(val) = std::env::var("WG_AGENT_INSECURE") {
+    if let Ok(val) = std::env::var("harmony_agent_INSECURE") {
         if val == "1" || val.to_lowercase() == "true" {
             warn!("Running in INSECURE mode - security features disabled");
             return false;

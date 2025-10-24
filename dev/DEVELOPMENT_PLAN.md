@@ -1,4 +1,4 @@
-# WG-Agent Development Plan
+# harmony-agent Development Plan
 
 **Version:** 1.0  
 **Date:** 2025-10-23  
@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-This document outlines the development roadmap for **wg-agent**, a cross-platform WireGuard network agent written in Rust. The project will transform the current minimal implementation into a production-ready daemon capable of managing WireGuard tunnels across Linux, Windows, macOS, Docker, and Kubernetes environments.
+This document outlines the development roadmap for **harmony-agent**, a cross-platform WireGuard network agent written in Rust. The project will transform the current minimal implementation into a production-ready daemon capable of managing WireGuard tunnels across Linux, Windows, macOS, Docker, and Kubernetes environments.
 
 ## Current State
 
@@ -156,8 +156,8 @@ Implement proper daemon functionality for each platform.
 - System integration templates
 
 **Service Files:**
-- `wg-agent.service` (systemd)
-- `cloud.runbeam.wg-agent.plist` (LaunchDaemon)
+- `harmony-agent.service` (systemd)
+- `cloud.runbeam.harmony-agent.plist` (LaunchDaemon)
 - Windows Service installer scripts
 
 ### Phase 7: Security Hardening
@@ -289,7 +289,7 @@ Final integration and release preparation.
 
 ### Module Structure
 ```
-wg-agent/
+harmony-agent/
 ├── src/
 │   ├── main.rs              # Entry point, CLI, daemon setup
 │   ├── lib.rs               # Library root

@@ -104,7 +104,7 @@ The application serialises this configuration into a control message:
 Build one agent binary per platform from a shared source tree:
 
 ```
-cmd/wg-agent/
+cmd/harmony-agent/
 pkg/tun/
 pkg/control/
 pkg/wireguard/
@@ -114,14 +114,14 @@ internal/platform/
 Cross-compile with:
 
 ```bash
-GOOS=linux   GOARCH=amd64 go build -o dist/linux/wg-agent ./cmd/wg-agent
-GOOS=windows GOARCH=amd64 go build -o dist/windows/wg-agent.exe ./cmd/wg-agent
-GOOS=darwin  GOARCH=arm64 go build -o dist/macos/wg-agent ./cmd/wg-agent
+GOOS=linux   GOARCH=amd64 go build -o dist/linux/harmony-agent ./cmd/harmony-agent
+GOOS=windows GOARCH=amd64 go build -o dist/windows/harmony-agent.exe ./cmd/harmony-agent
+GOOS=darwin  GOARCH=arm64 go build -o dist/macos/harmony-agent ./cmd/harmony-agent
 ```
 
 ### Distribution Models
 
-* **Linux/macOS/Windows Installer:** bundle `wg-agent` with main app package.
+* **Linux/macOS/Windows Installer:** bundle `harmony-agent` with main app package.
 * **Docker/K8s:** include the Linux binary in the image.
 * **Advanced:** standalone agent for custom deployments.
 
@@ -150,7 +150,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/local/bin/wg-agent up --config /etc/aurabox/network.toml
+ExecStart=/usr/local/bin/harmony-agent up --config /etc/aurabox/network.toml
 Restart=on-failure
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_IPC_LOCK
 AmbientCapabilities=CAP_NET_ADMIN CAP_IPC_LOCK
@@ -163,7 +163,7 @@ WantedBy=multi-user.target
 ### Windows Service
 
 ```
-sc.exe create WgAgent binPath= "C:\\Program Files\\Aurabox\\wg-agent.exe up --config C:\\Aurabox\\network.toml" start= auto
+sc.exe create WgAgent binPath= "C:\\Program Files\\Aurabox\\harmony-agent.exe up --config C:\\Aurabox\\network.toml" start= auto
 sc.exe description WgAgent "WireGuard Agent for Aurabox"
 ```
 
@@ -173,10 +173,10 @@ sc.exe description WgAgent "WireGuard Agent for Aurabox"
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>Label</key><string>cloud.aurabox.wg-agent</string>
+  <key>Label</key><string>cloud.aurabox.harmony-agent</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/wg-agent</string>
+    <string>/usr/local/bin/harmony-agent</string>
     <string>up</string>
     <string>--config</string>
     <string>/etc/aurabox/network.toml</string>
@@ -196,7 +196,7 @@ services:
     network_mode: "service:wg"
     depends_on: [wg]
   wg:
-    image: aurabox/wg-agent:latest
+    image: aurabox/harmony-agent:latest
     cap_add: ["NET_ADMIN", "IPC_LOCK"]
     sysctls:
       net.ipv4.ip_forward: "1"
@@ -217,8 +217,8 @@ spec:
   containers:
     - name: app
       image: aurabox/app:latest
-    - name: wg-agent
-      image: aurabox/wg-agent:latest
+    - name: harmony-agent
+      image: aurabox/harmony-agent:latest
       args: ["up", "--config", "/etc/aurabox/network.toml"]
       securityContext:
         capabilities:

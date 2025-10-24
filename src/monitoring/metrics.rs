@@ -30,14 +30,14 @@ pub enum MetricType {
 impl std::fmt::Display for MetricType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::BytesTransmitted => write!(f, "wg_agent_bytes_transmitted_total"),
-            Self::BytesReceived => write!(f, "wg_agent_bytes_received_total"),
-            Self::ActivePeers => write!(f, "wg_agent_active_peers"),
-            Self::HandshakeSuccess => write!(f, "wg_agent_handshake_success_total"),
-            Self::HandshakeFailure => write!(f, "wg_agent_handshake_failure_total"),
-            Self::ConnectionUptime => write!(f, "wg_agent_connection_uptime_seconds"),
-            Self::PeerLatency => write!(f, "wg_agent_peer_latency_milliseconds"),
-            Self::PacketLoss => write!(f, "wg_agent_packet_loss_rate"),
+            Self::BytesTransmitted => write!(f, "harmony_agent_bytes_transmitted_total"),
+            Self::BytesReceived => write!(f, "harmony_agent_bytes_received_total"),
+            Self::ActivePeers => write!(f, "harmony_agent_active_peers"),
+            Self::HandshakeSuccess => write!(f, "harmony_agent_handshake_success_total"),
+            Self::HandshakeFailure => write!(f, "harmony_agent_handshake_failure_total"),
+            Self::ConnectionUptime => write!(f, "harmony_agent_connection_uptime_seconds"),
+            Self::PeerLatency => write!(f, "harmony_agent_peer_latency_milliseconds"),
+            Self::PacketLoss => write!(f, "harmony_agent_packet_loss_rate"),
         }
     }
 }
@@ -221,7 +221,7 @@ mod tests {
     fn test_metric_type_display() {
         assert_eq!(
             MetricType::BytesTransmitted.to_string(),
-            "wg_agent_bytes_transmitted_total"
+            "harmony_agent_bytes_transmitted_total"
         );
     }
 
@@ -247,7 +247,7 @@ mod tests {
         collector.record(MetricType::ActivePeers, 3.0);
         
         let output = collector.export_prometheus();
-        assert!(output.contains("wg_agent_active_peers"));
+        assert!(output.contains("harmony_agent_active_peers"));
         assert!(output.contains("# HELP"));
         assert!(output.contains("# TYPE"));
     }

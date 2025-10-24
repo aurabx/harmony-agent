@@ -2,7 +2,7 @@
 
 ### Prerequisites
 
-wg-agent requires `wireguard-tools` on macOS for proper TUN device support:
+harmony-agent requires `wireguard-tools` on macOS for proper TUN device support:
 
 ```bash
 brew install wireguard-tools

@@ -133,6 +133,6 @@ jobs:
         with:
           context: .
           push: false
-          tags: wg-agent:${{ github.sha }}
+          tags: harmony-agent:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

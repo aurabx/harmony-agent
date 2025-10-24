@@ -1,12 +1,12 @@
 [Unit]
 Description=WireGuard Agent for Aurabox/JMIX/Runbeam
-Documentation=https://github.com/runbeam/wg-agent
+Documentation=https://github.com/runbeam/harmony-agent
 After=network.target network-online.target
 Wants=network-online.target
 
 [Service]
 Type=notify
-ExecStart=/usr/local/bin/wg-agent --config /etc/wg-agent/config.toml
+ExecStart=/usr/local/bin/harmony-agent --config /etc/harmony-agent/config.toml
 Restart=on-failure
 RestartSec=5s
 TimeoutStartSec=0
@@ -16,7 +16,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/run /var/lib/wg-agent
+ReadWritePaths=/var/run /var/lib/harmony-agent
 
 # Required capabilities for WireGuard
 AmbientCapabilities=CAP_NET_ADMIN CAP_IPC_LOCK
@@ -29,7 +29,7 @@ LimitNPROC=512
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=wg-agent
+SyslogIdentifier=harmony-agent
 
 [Install]
 WantedBy=multi-user.target

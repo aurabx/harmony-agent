@@ -2,7 +2,7 @@
 
 ## 🎉 Status: **COMPLETE & FUNCTIONAL**
 
-This document summarizes the complete WireGuard implementation for wg-agent, a cross-platform WireGuard management daemon written in Rust.
+This document summarizes the complete WireGuard implementation for harmony-agent, a cross-platform WireGuard management daemon written in Rust.
 
 ---
 
@@ -177,7 +177,7 @@ sudo -E cargo run --example test_device
 ### Module Structure
 
 ```
-wg-agent/
+harmony-agent/
 ├── src/
 │   ├── wireguard/
 │   │   ├── device.rs      # WgDevice - packet processing engine
@@ -215,14 +215,14 @@ wg-agent/
 
 ### 1. Configuration
 
-**Example**: `examples/wg-agent.toml`
+**Example**: `examples/harmony-agent.toml`
 
 ```toml
 [network.default]
 enable_wireguard = true
 interface = "wg0"  # Use "utun" for macOS
 mtu = 1420
-private_key_path = "/etc/wg-agent/private.key"
+private_key_path = "/etc/harmony-agent/private.key"
 dns = ["10.100.0.2"]
 
 [[network.default.peers]]
@@ -237,7 +237,7 @@ persistent_keepalive_secs = 25
 
 ```bash
 # Start agent (auto-starts enabled networks)
-sudo -E cargo run -- start --config examples/wg-agent.toml
+sudo -E cargo run -- start --config examples/harmony-agent.toml
 
 # Check status
 cargo run -- status
@@ -249,7 +249,7 @@ cargo run -- stop
 ### 3. Via Control API
 
 ```rust
-use wg_agent::control::CommandHandler;
+use harmony_agent::control::CommandHandler;
 
 let handler = CommandHandler::new();
 handler.load_config(config).await;

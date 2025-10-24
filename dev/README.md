@@ -1,10 +1,10 @@
-# wg-agent Examples
+# harmony-agent Examples
 
-This directory contains examples and testing utilities for wg-agent.
+This directory contains examples and testing utilities for harmony-agent.
 
 ## Docker WireGuard Testing
 
-Test wg-agent against a real WireGuard peer using Docker.
+Test harmony-agent against a real WireGuard peer using Docker.
 
 ### Prerequisites
 
@@ -18,9 +18,9 @@ Test wg-agent against a real WireGuard peer using Docker.
 # 1. Setup Docker WireGuard server
 ./examples/test-with-docker.sh
 
-# 2. Build and run wg-agent (in project root)
+# 2. Build and run harmony-agent (in project root)
 cargo build --release
-sudo ./target/release/wg-agent
+sudo ./target/release/harmony-agent
 
 # 3. Verify connection (in another terminal)
 ./examples/verify-connection.sh
@@ -30,7 +30,7 @@ sudo ./target/release/wg-agent
 
 - **wireguard-server/** - Docker Compose setup for WireGuard server
 - **keys/** - Generated WireGuard keys (client private/public)
-- **config.toml** - wg-agent configuration (in project root)
+- **config.toml** - harmony-agent configuration (in project root)
 
 ### Files
 
@@ -38,10 +38,10 @@ sudo ./target/release/wg-agent
   - Starts Docker WireGuard server
   - Generates cryptographic keys
   - Configures mutual peer authentication
-  - Creates wg-agent config.toml
+  - Creates harmony-agent config.toml
 
 - **verify-connection.sh** - Connection verification script
-  - Checks wg-agent metrics
+  - Checks harmony-agent metrics
   - Tests tunnel connectivity
   - Shows handshake status
   - Displays transfer statistics
@@ -55,14 +55,14 @@ sudo ./target/release/wg-agent
 
 1. **Start server**: `./examples/test-with-docker.sh`
 2. **Build agent**: `cargo build --release`
-3. **Run agent**: `sudo ./target/release/wg-agent`
+3. **Run agent**: `sudo ./target/release/harmony-agent`
 4. **Verify**: `./examples/verify-connection.sh`
 5. **Test traffic**: `ping 10.100.0.1`
 
 ### Expected Results
 
 ```
-📊 wg-agent Metrics:
+📊 harmony-agent Metrics:
 tunnel_state{name="docker_test"} 1
 peer_last_handshake{tunnel="docker_test",peer="docker-server"} 1729725431
 
@@ -81,7 +81,7 @@ Ping 10.100.0.1 (server): ✅ SUCCESS
 docker logs wg-test-server
 
 # Enable debug logging
-RUST_LOG=debug sudo ./target/release/wg-agent
+RUST_LOG=debug sudo ./target/release/harmony-agent
 ```
 
 **Can't ping?**
@@ -95,14 +95,14 @@ ifconfig | grep utun
 
 **Permission denied?**
 ```bash
-# wg-agent requires sudo for TUN device creation
-sudo ./target/release/wg-agent
+# harmony-agent requires sudo for TUN device creation
+sudo ./target/release/harmony-agent
 ```
 
 ### Cleanup
 
 ```bash
-# Stop wg-agent (Ctrl+C)
+# Stop harmony-agent (Ctrl+C)
 
 # Stop Docker server
 cd ./examples/wireguard-server

@@ -1,12 +1,12 @@
-//! Performance benchmarks for wg-agent
+//! Performance benchmarks for harmony-agent
 //!
 //! Run with: cargo bench
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
-use wg_agent::config::{Config, NetworkConfig, PeerConfig};
-use wg_agent::monitoring::{Monitor, ConnectionState};
-use wg_agent::security::{validate_network_name, validate_interface_name};
-use wg_agent::wireguard::{PrivateKey, PublicKey};
+use harmony_agent::config::{Config, NetworkConfig, PeerConfig};
+use harmony_agent::monitoring::{Monitor, ConnectionState};
+use harmony_agent::security::{validate_network_name, validate_interface_name};
+use harmony_agent::wireguard::{PrivateKey, PublicKey};
 
 fn bench_key_generation(c: &mut Criterion) {
     c.bench_function("key_generation", |b| {

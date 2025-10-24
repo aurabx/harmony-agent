@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  wg-agent:
-    image: ghcr.io/runbeam/wg-agent:latest
-    container_name: wg-agent
+  harmony-agent:
+    image: ghcr.io/runbeam/harmony-agent:latest
+    container_name: harmony-agent
     restart: unless-stopped
     
     # Required capabilities for WireGuard
@@ -16,14 +16,14 @@ services:
     
     # Volumes
     volumes:
-      - ./config:/etc/wg-agent:ro
-      - ./keys:/etc/wg-agent/keys:ro
-      - wg-agent-run:/var/run
+      - ./config:/etc/harmony-agent:ro
+      - ./keys:/etc/harmony-agent/keys:ro
+      - harmony-agent-run:/var/run
     
     # Environment variables
     environment:
       - RUST_LOG=info
-      - WG_AGENT_LOG_LEVEL=info
+      - harmony_agent_LOG_LEVEL=info
     
     # Health check
     healthcheck:
@@ -67,6 +67,6 @@ services:
       - prometheus
 
 volumes:
-  wg-agent-run:
+  harmony-agent-run:
   prometheus-data:
   grafana-data:

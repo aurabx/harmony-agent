@@ -1,6 +1,6 @@
 //! Service and daemon management
 //!
-//! This module provides abstractions for running wg-agent as a system service
+//! This module provides abstractions for running harmony-agent as a system service
 //! or daemon across different platforms (systemd, Windows Service, LaunchDaemon).
 
 use crate::error::WgAgentError;

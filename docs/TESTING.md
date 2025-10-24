@@ -1,6 +1,6 @@
-# Testing Guide for wg-agent
+# Testing Guide for harmony-agent
 
-This document describes the testing strategy and how to run tests for the wg-agent project.
+This document describes the testing strategy and how to run tests for the harmony-agent project.
 
 ## Test Coverage Target
 
@@ -145,10 +145,10 @@ cargo test --target x86_64-pc-windows-gnu
 
 ```bash
 # Build Docker image
-docker build -t wg-agent-test .
+docker build -t harmony-agent-test .
 
 # Run tests in Docker
-docker run --rm wg-agent-test cargo test
+docker run --rm harmony-agent-test cargo test
 ```
 
 ### Docker Compose Test Environment
@@ -162,7 +162,7 @@ services:
     build: .
     command: cargo test --workspace
     volumes:
-      - .:/usr/src/wg-agent
+      - .:/usr/src/harmony-agent
     environment:
       - RUST_BACKTRACE=1
 ```
@@ -211,7 +211,7 @@ mod tests {
 ### Integration Test Template
 
 ```rust
-use wg_agent::module::{Component, Config};
+use harmony_agent::module::{Component, Config};
 
 #[test]
 fn test_integration_scenario() {

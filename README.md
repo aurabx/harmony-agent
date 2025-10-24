@@ -1,8 +1,8 @@
 # Harmony WireGuard agent
 
-[//]: # ([![CI]&#40;https://github.com/aurabx/wg-agent/workflows/CI/badge.svg&#41;]&#40;https://github.com/aurabx/wg-agent/actions&#41;)
+[//]: # ([![CI]&#40;https://github.com/aurabx/harmony-agent/workflows/CI/badge.svg&#41;]&#40;https://github.com/aurabx/harmony-agent/actions&#41;)
 
-[//]: # ([![codecov]&#40;https://codecov.io/gh/runbeam/wg-agent/branch/main/graph/badge.svg&#41;]&#40;https://codecov.io/gh/runbeam/wg-agent&#41;)
+[//]: # ([![codecov]&#40;https://codecov.io/gh/runbeam/harmony-agent/branch/main/graph/badge.svg&#41;]&#40;https://codecov.io/gh/runbeam/harmony-agent&#41;)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
 
@@ -26,8 +26,8 @@ This is a core part of the Harmony system, providing connectivity between Harmon
 
 ```bash
 # Download latest release
-curl -L https://github.com/aurabx/wg-agent/releases/latest/download/wg-agent-linux-x86_64.tar.gz | tar xz
-sudo mv wg-agent /usr/local/bin/
+curl -L https://github.com/aurabx/harmony-agent/releases/latest/download/harmony-agent-linux-x86_64.tar.gz | tar xz
+sudo mv harmony-agent /usr/local/bin/
 
 # Or build from source
 cargo install --path .
@@ -35,14 +35,14 @@ cargo install --path .
 
 ### Configuration
 
-Create `/etc/wg-agent/config.toml`:
+Create `/etc/harmony-agent/config.toml`:
 
 ```toml
 [network.default]
 enable_wireguard = true
 interface = "wg0"
 mtu = 1420
-private_key_path = "/etc/wg-agent/private.key"
+private_key_path = "/etc/harmony-agent/private.key"
 dns = ["10.100.0.2"]
 
 [[network.peers]]
@@ -57,10 +57,10 @@ persistent_keepalive_secs = 25
 
 ```bash
 # Start agent
-sudo wg-agent start --config /etc/wg-agent/config.toml
+sudo harmony-agent start --config /etc/harmony-agent/config.toml
 
 # Check status
-wg-agent status
+harmony-agent status
 
 # View metrics
 curl http://localhost:9090/metrics
@@ -81,8 +81,8 @@ curl http://localhost:9090/metrics
 
 ```bash
 docker run --rm --cap-add NET_ADMIN --cap-add IPC_LOCK \
-  -v /etc/wg-agent:/etc/wg-agent:ro \
-  ghcr.io/runbeam/wg-agent:latest
+  -v /etc/harmony-agent:/etc/harmony-agent:ro \
+  ghcr.io/runbeam/harmony-agent:latest
 ```
 
 ### Docker Compose
@@ -106,20 +106,20 @@ kubectl apply -f deploy/kubernetes/sidecar.yaml
 
 ```bash
 # Copy service file
-sudo cp deploy/systemd/wg-agent.service /etc/systemd/system/
+sudo cp deploy/systemd/harmony-agent.service /etc/systemd/system/
 
 # Enable and start
-sudo systemctl enable --now wg-agent
+sudo systemctl enable --now harmony-agent
 ```
 
 ### LaunchDaemon (macOS)
 
 ```bash
 # Copy plist
-sudo cp deploy/launchd/cloud.runbeam.wg-agent.plist /Library/LaunchDaemons/
+sudo cp deploy/launchd/cloud.runbeam.harmony-agent.plist /Library/LaunchDaemons/
 
 # Load and start
-sudo launchctl load /Library/LaunchDaemons/cloud.runbeam.wg-agent.plist
+sudo launchctl load /Library/LaunchDaemons/cloud.runbeam.harmony-agent.plist
 ```
 
 ## Architecture
@@ -132,7 +132,7 @@ sudo launchctl load /Library/LaunchDaemons/cloud.runbeam.wg-agent.plist
                        │ JSON Control Messages
                        ↓
 ┌─────────────────────────────────────────────────────────┐
-│                      wg-agent                           │
+│                      harmony-agent                           │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
 │  │ Control API  │  │  WireGuard   │  │  Monitoring  │  │
 │  │ (Unix/Pipe)  │  │   Tunnel     │  │  & Metrics   │  │
@@ -218,12 +218,12 @@ See [SECURITY.md](docs/SECURITY.md) for details.
 ### Prometheus Metrics
 
 ```
-wg_agent_bytes_transmitted_total      # Total bytes sent
-wg_agent_bytes_received_total         # Total bytes received
-wg_agent_active_peers                  # Number of active peers
-wg_agent_handshake_success_total      # Successful handshakes
-wg_agent_handshake_failure_total      # Failed handshakes
-wg_agent_connection_uptime_seconds    # Connection uptime
+harmony_agent_bytes_transmitted_total      # Total bytes sent
+harmony_agent_bytes_received_total         # Total bytes received
+harmony_agent_active_peers                  # Number of active peers
+harmony_agent_handshake_success_total      # Successful handshakes
+harmony_agent_handshake_failure_total      # Failed handshakes
+harmony_agent_connection_uptime_seconds    # Connection uptime
 ```
 
 ### Health Checks
@@ -264,9 +264,9 @@ This project is licensed under the Apache License 2.0 - see [LICENSE](LICENSE) f
 
 ## Support
 
-- **Documentation**: https://docs.runbeam.io/wg-agent
-- **Issues**: https://github.com/aurabx/wg-agent/issues
-- **Discussions**: https://github.com/aurabx/wg-agent/discussions
+- **Documentation**: https://docs.runbeam.io/harmony-agent
+- **Issues**: https://github.com/aurabx/harmony-agent/issues
+- **Discussions**: https://github.com/aurabx/harmony-agent/discussions
 - **Security**: security@runbeam.io
 
 ---

@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>cloud.runbeam.wg-agent</string>
+    <string>cloud.runbeam.harmony-agent</string>
     
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/local/bin/wg-agent</string>
+        <string>/usr/local/bin/harmony-agent</string>
         <string>--config</string>
-        <string>/etc/wg-agent/config.toml</string>
+        <string>/etc/harmony-agent/config.toml</string>
     </array>
     
     <key>RunAtLoad</key>
@@ -22,10 +22,10 @@
     </dict>
     
     <key>StandardOutPath</key>
-    <string>/var/log/wg-agent/stdout.log</string>
+    <string>/var/log/harmony-agent/stdout.log</string>
     
     <key>StandardErrorPath</key>
-    <string>/var/log/wg-agent/stderr.log</string>
+    <string>/var/log/harmony-agent/stderr.log</string>
     
     <key>EnvironmentVariables</key>
     <dict>

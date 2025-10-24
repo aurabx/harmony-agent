@@ -1,4 +1,4 @@
-# Rust formatting configuration for wg-agent
+# Rust formatting configuration for harmony-agent
 
 # Edition
 edition = "2024"
