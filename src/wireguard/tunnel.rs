@@ -14,7 +14,7 @@ use crate::wireguard::WgDevice;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{debug, error, info, warn};
+use tracing::{error, info, warn};
 
 /// Tunnel state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -143,7 +143,7 @@ enum DeviceWrapper {
 }
 
 impl DeviceWrapper {
-    fn interface_name(&self) -> &str {
+    fn _interface_name(&self) -> &str {
         match self {
             #[cfg(not(target_os = "macos"))]
             DeviceWrapper::Boringtun(d) => d.interface_name(),
