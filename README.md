@@ -1,4 +1,4 @@
-# wg-agent
+# Harmony WireGuard agent
 
 [//]: # ([![CI]&#40;https://github.com/aurabx/wg-agent/workflows/CI/badge.svg&#41;]&#40;https://github.com/aurabx/wg-agent/actions&#41;)
 
@@ -7,6 +7,8 @@
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
 
 A cross-platform WireGuard network agent for managing VPN tunnels on behalf of applications. Built with Rust for security, performance, and reliability.
+
+This is a core part of the Harmony system, providing connectivity between Harmony instances. See [https://runbeam.io](https://runbeam.io)
 
 ## Features
 
