@@ -274,6 +274,7 @@ mod tests {
             config: Some(JsonNetworkConfig {
                 interface: "wg0".to_string(),
                 mtu: 1420,
+                address: Some("10.0.0.2/24".to_string()),
                 dns: vec!["10.100.0.2".to_string()],
                 private_key_path: "/etc/wg-agent/private.key".to_string(),
                 peers: vec![],
@@ -291,6 +292,7 @@ mod tests {
         let json_config = JsonNetworkConfig {
             interface: "wg0".to_string(),
             mtu: 1420,
+            address: Some("10.0.0.1/24".to_string()),
             dns: vec!["10.100.0.2".to_string()],
             private_key_path: "/etc/wg-agent/private.key".to_string(),
             peers: vec![],

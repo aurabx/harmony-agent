@@ -6,11 +6,13 @@
 use crate::config::NetworkConfig;
 use crate::error::{Result, WgAgentError};
 use crate::platform::{get_platform, Platform};
-use crate::wireguard::{DeviceConfig, KeyPair, Peer, PeerConfig, WgDevice};
+use crate::wireguard::{DeviceConfig, KeyPair, Peer, PeerConfig};
+#[cfg(target_os = "macos")]
+use crate::wireguard::MacOsWgDevice;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{debug, error, info, warn};
+use tracing::{error, info, warn};
 
 /// Tunnel state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -130,6 +132,43 @@ impl TunnelConfig {
     }
 }
 
+/// Device wrapper to handle both implementations
+enum DeviceWrapper {
+    #[cfg(not(target_os = "macos"))]
+    Boringtun(WgDevice),
+    #[cfg(target_os = "macos")]
+    WireguardGo(MacOsWgDevice),
+}
+
+impl DeviceWrapper {
+    fn interface_name(&self) -> &str {
+        match self {
+            #[cfg(not(target_os = "macos"))]
+            DeviceWrapper::Boringtun(d) => d.interface_name(),
+            #[cfg(target_os = "macos")]
+            DeviceWrapper::WireguardGo(d) => d.interface_name(),
+        }
+    }
+
+    async fn stats(&self) -> crate::wireguard::DeviceStats {
+        match self {
+            #[cfg(not(target_os = "macos"))]
+            DeviceWrapper::Boringtun(d) => d.stats().await,
+            #[cfg(target_os = "macos")]
+            DeviceWrapper::WireguardGo(d) => d.stats().await,
+        }
+    }
+
+    async fn stop(self) -> Result<()> {
+        match self {
+            #[cfg(not(target_os = "macos"))]
+            DeviceWrapper::Boringtun(d) => d.stop().await,
+            #[cfg(target_os = "macos")]
+            DeviceWrapper::WireguardGo(d) => d.stop().await,
+        }
+    }
+}
+
 /// WireGuard tunnel
 pub struct Tunnel {
     /// Tunnel configuration
@@ -141,7 +180,7 @@ pub struct Tunnel {
     /// Platform implementation
     platform: Box<dyn Platform>,
     /// WireGuard device (None when stopped)
-    device: Arc<RwLock<Option<WgDevice>>>,
+    device: Arc<RwLock<Option<DeviceWrapper>>>,
 }
 
 impl Tunnel {
@@ -208,59 +247,96 @@ impl Tunnel {
             peers: self.config.peers.clone(),
         };
 
-        // Create WireGuard device (this creates TUN device and starts packet processing)
-        let device = match WgDevice::new(device_config, self.platform.as_ref()).await {
-            Ok(d) => d,
-            Err(e) => {
-                error!("Failed to create WireGuard device: {}", e);
+        // Create WireGuard device - platform-specific implementation
+        #[cfg(target_os = "macos")]
+        let device = {
+            let mut macos_device = match MacOsWgDevice::new(device_config).await {
+                Ok(d) => d,
+                Err(e) => {
+                    error!("Failed to create macOS WireGuard device: {}", e);
+                    *self.state.write().await = TunnelState::Error;
+                    return Err(e);
+                }
+            };
+
+            // Start wireguard-go and configure interface
+            let address = self.config.address.as_ref().ok_or_else(|| {
+                WgAgentError::Config("Address required for macOS WireGuard".to_string())
+            })?;
+
+            let routes: Vec<String> = self.config.peers
+                .iter()
+                .flat_map(|p| p.allowed_ips.clone())
+                .collect();
+
+            if let Err(e) = macos_device.start(address, &routes).await {
+                error!("Failed to start macOS WireGuard device: {}", e);
                 *self.state.write().await = TunnelState::Error;
                 return Err(e);
             }
+
+            info!("macOS WireGuard device started using wireguard-go");
+            DeviceWrapper::WireguardGo(macos_device)
         };
 
-        // Get the actual interface name (may differ from config on macOS)
-        let interface_name = device.interface_name();
+        #[cfg(not(target_os = "macos"))]
+        let device = {
+            let wg_device = match WgDevice::new(device_config, self.platform.as_ref()).await {
+                Ok(d) => d,
+                Err(e) => {
+                    error!("Failed to create WireGuard device: {}", e);
+                    *self.state.write().await = TunnelState::Error;
+                    return Err(e);
+                }
+            };
+            DeviceWrapper::Boringtun(wg_device)
+        };
 
-        // Assign IP address to interface if specified
-        if let Some(ref address) = self.config.address {
-            debug!("Assigning address {} to interface {}", address, interface_name);
-            if let Err(e) = self.platform.set_address(interface_name, address) {
-                error!("Failed to assign address to interface: {}", e);
-                *self.state.write().await = TunnelState::Error;
-                return Err(e);
-            }
-        }
-
-        // Configure routes for all peers
-        for peer_config in &self.config.peers {
-            if !peer_config.allowed_ips.is_empty() {
-                debug!(
-                    "Configuring routes for peer: {} ({} routes)",
-                    peer_config.name,
-                    peer_config.allowed_ips.len()
-                );
-                
-                if let Err(e) = self.platform.configure_routes(
-                    interface_name,
-                    &peer_config.allowed_ips,
-                ) {
-                    warn!("Failed to configure routes for peer {}: {}", peer_config.name, e);
+        // On non-macOS platforms, configure address/routes/DNS manually
+        // (macOS device handles this in its start() method)
+        #[cfg(not(target_os = "macos"))]
+        {
+            // Assign IP address to interface if specified
+            if let Some(ref address) = self.config.address {
+                debug!("Assigning address {} to interface {}", address, interface_name);
+                if let Err(e) = self.platform.set_address(interface_name, address) {
+                    error!("Failed to assign address to interface: {}", e);
+                    *self.state.write().await = TunnelState::Error;
+                    return Err(e);
                 }
             }
-        }
 
-        // Configure DNS
-        if !self.config.dns_servers.is_empty() {
-            debug!(
-                "Configuring DNS servers: {:?}",
-                self.config.dns_servers
-            );
-            
-            if let Err(e) = self.platform.configure_dns(
-                interface_name,
-                &self.config.dns_servers,
-            ) {
-                warn!("Failed to configure DNS: {}", e);
+            // Configure routes for all peers
+            for peer_config in &self.config.peers {
+                if !peer_config.allowed_ips.is_empty() {
+                    debug!(
+                        "Configuring routes for peer: {} ({} routes)",
+                        peer_config.name,
+                        peer_config.allowed_ips.len()
+                    );
+                    
+                    if let Err(e) = self.platform.configure_routes(
+                        interface_name,
+                        &peer_config.allowed_ips,
+                    ) {
+                        warn!("Failed to configure routes for peer {}: {}", peer_config.name, e);
+                    }
+                }
+            }
+
+            // Configure DNS
+            if !self.config.dns_servers.is_empty() {
+                debug!(
+                    "Configuring DNS servers: {:?}",
+                    self.config.dns_servers
+                );
+                
+                if let Err(e) = self.platform.configure_dns(
+                    interface_name,
+                    &self.config.dns_servers,
+                ) {
+                    warn!("Failed to configure DNS: {}", e);
+                }
             }
         }
 
@@ -484,6 +560,7 @@ mod tests {
         let config = TunnelConfig {
             interface: "wg0".to_string(),
             mtu: 1420,
+            address: Some("10.0.0.1/24".to_string()),
             dns_servers: vec![],
             keypair,
             peers: vec![],
@@ -499,6 +576,7 @@ mod tests {
         let config = TunnelConfig {
             interface: "wg0".to_string(),
             mtu: 2000, // Invalid MTU
+            address: Some("10.0.0.1/24".to_string()),
             dns_servers: vec![],
             keypair,
             peers: vec![],
@@ -514,6 +592,7 @@ mod tests {
         let config = TunnelConfig {
             interface: "".to_string(), // Empty interface
             mtu: 1420,
+            address: Some("10.0.0.1/24".to_string()),
             dns_servers: vec![],
             keypair,
             peers: vec![],
@@ -529,6 +608,7 @@ mod tests {
         let config = TunnelConfig {
             interface: "wg0".to_string(),
             mtu: 1420,
+            address: Some("10.0.0.1/24".to_string()),
             dns_servers: vec![],
             keypair,
             peers: vec![],
@@ -545,6 +625,7 @@ mod tests {
         let config = TunnelConfig {
             interface: "wg0".to_string(),
             mtu: 1420,
+            address: Some("10.0.0.1/24".to_string()),
             dns_servers: vec![],
             keypair,
             peers: vec![],

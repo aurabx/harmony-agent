@@ -70,7 +70,7 @@ curl http://localhost:9090/metrics
 - **[Testing Guide](docs/TESTING.md)** - Running tests and benchmarks
 - **[Security](docs/SECURITY.md)** - Security best practices
 - **[Architecture](docs/architecture.md)** - Technical design details
-- **[Development Plan](docs/DEVELOPMENT_PLAN.md)** - Project roadmap
+- **[Development Plan](dev/DEVELOPMENT_PLAN.md)** - Project roadmap
 
 ## Deployment
 

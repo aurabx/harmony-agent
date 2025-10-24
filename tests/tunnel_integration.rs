@@ -24,6 +24,7 @@ fn create_test_tunnel_config() -> TunnelConfig {
             "wg-test".to_string()
         },
         mtu: 1420,
+        address: Some("10.0.0.1/24".to_string()),
         dns_servers: vec![],
         keypair,
         peers: vec![],
@@ -43,7 +44,6 @@ fn create_tunnel_config_with_peer() -> TunnelConfig {
         keepalive_interval: Some(Duration::from_secs(25)),
         preshared_key: None,
     };
-    
     TunnelConfig {
         interface: if cfg!(target_os = "macos") {
             "utun".to_string()
@@ -51,6 +51,7 @@ fn create_tunnel_config_with_peer() -> TunnelConfig {
             "wg-test".to_string()
         },
         mtu: 1420,
+        address: Some("10.0.0.1/24".to_string()),
         dns_servers: vec!["10.0.0.2".to_string()],
         keypair: local_keypair,
         peers: vec![peer_config],
@@ -77,6 +78,7 @@ async fn test_tunnel_config_validation() {
     let config = TunnelConfig {
         interface: "wg0".to_string(),
         mtu: 2000, // Invalid
+        address: Some("10.0.0.1/24".to_string()),
         dns_servers: vec![],
         keypair: keypair.clone(),
         peers: vec![],
@@ -88,6 +90,7 @@ async fn test_tunnel_config_validation() {
     let config = TunnelConfig {
         interface: "".to_string(),
         mtu: 1420,
+        address: Some("10.0.0.1/24".to_string()),
         dns_servers: vec![],
         keypair: keypair.clone(),
         peers: vec![],
@@ -99,6 +102,7 @@ async fn test_tunnel_config_validation() {
     let config = TunnelConfig {
         interface: "wg0".to_string(),
         mtu: 1420,
+        address: Some("10.0.0.1/24".to_string()),
         dns_servers: vec![],
         keypair,
         peers: vec![],
@@ -213,6 +217,7 @@ async fn test_tunnel_from_network_config() {
             "wg-test".to_string()
         },
         mtu: 1420,
+        address: Some("10.0.0.1/24".to_string()),
         private_key_path: key_path.to_string_lossy().to_string(),
         dns: vec!["10.0.0.2".to_string()],
         peers: vec![peer_config],
