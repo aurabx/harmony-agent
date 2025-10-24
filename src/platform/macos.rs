@@ -5,7 +5,8 @@
 
 use crate::error::{Result, WgAgentError};
 use crate::platform::{detection, Platform, PlatformInfo};
-use std::process::Command;
+use std::io::Write;
+use std::process::{Command, Stdio};
 use tun::Device;
 use tracing::{debug, info, warn};
 
@@ -106,6 +107,46 @@ impl Platform for MacOsPlatform {
         Ok(())
     }
 
+    fn set_address(&self, interface: &str, address: &str) -> Result<()> {
+        info!("Setting address {} on interface {}", address, interface);
+        // Parse CIDR notation (e.g., "10.100.0.2/24")
+        let parts: Vec<&str> = address.split('/').collect();
+        if parts.len() != 2 {
+            return Err(WgAgentError::Config(format!(
+                "Invalid address format: {} (expected CIDR notation like 10.100.0.2/24)",
+                address
+            )));
+        }
+        let ip = parts[0];
+        let prefix_len: u8 = parts[1].parse().map_err(|_| {
+            WgAgentError::Config(format!("Invalid prefix length: {}", parts[1]))
+        })?;
+        
+        // macOS utun interfaces are point-to-point, so we need to specify both local and remote addresses
+        // For WireGuard tunnels, we typically use the first IP in the subnet as the gateway/destination
+        let ip_parts: Vec<&str> = ip.split('.').collect();
+        if ip_parts.len() != 4 {
+            return Err(WgAgentError::Config(format!("Invalid IP address: {}", ip)));
+        }
+        
+        // Use .1 as the gateway (e.g., 10.100.0.1 for 10.100.0.2/24)
+        let dest = format!("{}.{}.{}.1", ip_parts[0], ip_parts[1], ip_parts[2]);
+        
+        // Convert prefix length to netmask
+        let netmask = match prefix_len {
+            24 => "255.255.255.0",
+            16 => "255.255.0.0",
+            8 => "255.0.0.0",
+            _ => return Err(WgAgentError::Config(format!(
+                "Unsupported prefix length: {}", prefix_len
+            ))),
+        };
+        
+        // For macOS point-to-point: ifconfig utun8 10.100.0.2 10.100.0.1 netmask 255.255.255.0
+        self.run_command("ifconfig", &[interface, ip, &dest, "netmask", netmask])?;
+        Ok(())
+    }
+
     fn configure_routes(&self, interface: &str, routes: &[String]) -> Result<()> {
         info!("Configuring {} routes for interface {}", routes.len(), interface);
 
@@ -133,21 +174,49 @@ impl Platform for MacOsPlatform {
     fn configure_dns(&self, interface: &str, dns_servers: &[String]) -> Result<()> {
         info!("Configuring {} DNS servers for interface {}", dns_servers.len(), interface);
 
-        // On macOS, DNS configuration is typically done through:
-        // 1. scutil (System Configuration utility)
-        // 2. networksetup command
+        if dns_servers.is_empty() {
+            return Ok(());
+        }
 
-        // Build DNS server list
-        let _dns_args: Vec<String> = dns_servers.iter()
-            .flat_map(|dns| vec!["-dns".to_string(), dns.clone()])
-            .collect();
-
-        // Use scutil to configure DNS
+        // Use scutil to configure DNS for the interface
+        // We create a State:/Network/Service/<interface>/DNS entry
         debug!("Configuring DNS via scutil for interface {}", interface);
         
-        // Note: Full scutil integration requires more complex setup
-        // This is a placeholder for Phase 4
-        warn!("DNS configuration on macOS requires additional implementation");
+        // Build scutil configuration
+        let mut config = String::new();
+        config.push_str(&format!("d.init\n"));
+        config.push_str(&format!("d.add ServerAddresses * {}", dns_servers.join(" ")));
+        config.push_str("\n");
+        config.push_str(&format!("set State:/Network/Service/{}/DNS\n", interface));
+        config.push_str("quit\n");
+        
+        // Execute scutil with the configuration
+        let mut child = Command::new("scutil")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| {
+                WgAgentError::Platform(format!("Failed to spawn scutil: {}", e))
+            })?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            stdin.write_all(config.as_bytes()).map_err(|e| {
+                WgAgentError::Platform(format!("Failed to write to scutil stdin: {}", e))
+            })?;
+        }
+
+        let output = child.wait_with_output().map_err(|e| {
+            WgAgentError::Platform(format!("Failed to wait for scutil: {}", e))
+        })?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            warn!("scutil returned non-zero status: {}", stderr);
+            // Don't fail on DNS configuration errors, just warn
+        } else {
+            info!("DNS configured successfully for interface {}", interface);
+        }
         
         Ok(())
     }
@@ -155,8 +224,38 @@ impl Platform for MacOsPlatform {
     fn remove_dns(&self, interface: &str) -> Result<()> {
         info!("Removing DNS configuration for interface {}", interface);
         
-        // DNS removal on macOS
-        debug!("Removing DNS for interface {}", interface);
+        // Remove DNS configuration using scutil
+        debug!("Removing DNS configuration via scutil for interface {}", interface);
+        
+        let config = format!(
+            "remove State:/Network/Service/{}/DNS\nquit\n",
+            interface
+        );
+        
+        let mut child = Command::new("scutil")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| {
+                WgAgentError::Platform(format!("Failed to spawn scutil: {}", e))
+            })?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            let _ = stdin.write_all(config.as_bytes());
+        }
+
+        let output = child.wait_with_output().map_err(|e| {
+            WgAgentError::Platform(format!("Failed to wait for scutil: {}", e))
+        })?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            debug!("scutil remove returned non-zero status: {}", stderr);
+            // Ignore errors when removing (entry might not exist)
+        } else {
+            info!("DNS configuration removed for interface {}", interface);
+        }
         
         Ok(())
     }

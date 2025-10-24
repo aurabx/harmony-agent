@@ -71,6 +71,8 @@ pub struct TunnelConfig {
     pub mtu: u16,
     /// DNS servers
     pub dns_servers: Vec<String>,
+    /// Interface IP address (CIDR notation)
+    pub address: Option<String>,
     /// Our key pair
     pub keypair: KeyPair,
     /// Peer configurations
@@ -94,6 +96,7 @@ impl TunnelConfig {
             interface: config.interface.clone(),
             mtu: config.mtu,
             dns_servers: config.dns.clone(),
+            address: config.address.clone(),
             keypair,
             peers,
         })
@@ -215,8 +218,18 @@ impl Tunnel {
             }
         };
 
-        // Get the actual interface name (may differ on macOS)
-        let interface_name = &self.config.interface;
+        // Get the actual interface name (may differ from config on macOS)
+        let interface_name = device.interface_name();
+
+        // Assign IP address to interface if specified
+        if let Some(ref address) = self.config.address {
+            debug!("Assigning address {} to interface {}", address, interface_name);
+            if let Err(e) = self.platform.set_address(interface_name, address) {
+                error!("Failed to assign address to interface: {}", e);
+                *self.state.write().await = TunnelState::Error;
+                return Err(e);
+            }
+        }
 
         // Configure routes for all peers
         for peer_config in &self.config.peers {

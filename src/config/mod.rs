@@ -45,6 +45,9 @@ pub struct NetworkConfig {
     #[serde(default)]
     pub dns: Vec<String>,
 
+    /// Interface IP address (CIDR notation, e.g., "10.100.0.2/24")
+    pub address: Option<String>,
+
     /// WireGuard peers
     #[serde(default)]
     pub peers: Vec<PeerConfig>,

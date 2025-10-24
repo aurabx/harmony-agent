@@ -38,6 +38,9 @@ pub struct TomlNetworkConfig {
     /// Path to private key file
     pub private_key_path: String,
 
+    /// Interface IP address (CIDR notation)
+    pub address: Option<String>,
+
     /// DNS servers
     #[serde(default)]
     pub dns: Vec<String>,
@@ -125,6 +128,7 @@ impl From<TomlNetworkConfig> for NetworkConfig {
             mtu: toml.mtu,
             private_key_path: toml.private_key_path,
             dns: toml.dns,
+            address: toml.address,
             peers: toml.peers.into_iter().map(|p| p.into()).collect(),
             http: toml.http.map(|h| h.into()),
         }

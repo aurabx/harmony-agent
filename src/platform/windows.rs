@@ -75,6 +75,13 @@ impl Platform for WindowsPlatform {
         Ok(())
     }
 
+    fn set_address(&self, interface: &str, address: &str) -> Result<()> {
+        info!("Setting address {} on interface {}", address, interface);
+        
+        warn!("Windows set_address not yet implemented");
+        Ok(())
+    }
+
     fn configure_routes(&self, interface: &str, routes: &[String]) -> Result<()> {
         info!("Configuring {} routes for interface {}", routes.len(), interface);
 

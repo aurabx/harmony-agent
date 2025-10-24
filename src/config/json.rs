@@ -57,6 +57,10 @@ pub struct JsonNetworkConfig {
     #[serde(rename = "privateKeyPath")]
     pub private_key_path: String,
 
+    /// Interface IP address (CIDR notation)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub address: Option<String>,
+
     /// WireGuard peers
     #[serde(default)]
     pub peers: Vec<JsonPeerConfig>,
@@ -135,6 +139,7 @@ impl From<JsonNetworkConfig> for NetworkConfig {
             mtu: json.mtu,
             private_key_path: json.private_key_path,
             dns: json.dns,
+            address: json.address,
             peers: json.peers.into_iter().map(|p| p.into()).collect(),
             http: json.http.map(|h| h.into()),
         }

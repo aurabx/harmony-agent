@@ -116,6 +116,12 @@ impl Platform for LinuxPlatform {
         Ok(())
     }
 
+    fn set_address(&self, interface: &str, address: &str) -> Result<()> {
+        info!("Setting address {} on interface {}", address, interface);
+        self.run_command("ip", &["addr", "add", address, "dev", interface])?;
+        Ok(())
+    }
+
     fn configure_routes(&self, interface: &str, routes: &[String]) -> Result<()> {
         info!("Configuring {} routes for interface {}", routes.len(), interface);
 

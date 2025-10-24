@@ -38,6 +38,9 @@ pub trait Platform: Send + Sync {
     /// Bring interface down
     fn interface_down(&self, interface: &str) -> Result<()>;
 
+    /// Set interface IP address
+    fn set_address(&self, interface: &str, address: &str) -> Result<()>;
+
     /// Configure routes for the interface
     fn configure_routes(&self, interface: &str, routes: &[String]) -> Result<()>;
 

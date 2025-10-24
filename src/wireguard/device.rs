@@ -22,6 +22,7 @@ use tokio::sync::{mpsc, Mutex, RwLock};
 use tokio::task::JoinHandle;
 use tokio::time;
 use tracing::{debug, error, info, warn};
+use tun::Device as TunDevice;
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
 
 /// Maximum packet size for WireGuard
@@ -124,6 +125,8 @@ impl PeerTunnel {
 pub struct WgDevice {
     /// Device configuration
     config: DeviceConfig,
+    /// Actual interface name (may differ from config.interface on macOS)
+    actual_interface: String,
     /// TUN device for packet I/O (wrapped in Mutex for mut access)
     tun_device: Arc<Mutex<tun::platform::Device>>,
     /// UDP socket for network communication
@@ -157,6 +160,11 @@ impl WgDevice {
 
         // Create TUN device using platform-specific implementation
         let tun_device = platform.create_tun_device(&config.interface, config.mtu)?;
+        
+        // Get the actual interface name (may differ on macOS)
+        let actual_interface = tun_device.name().map_err(|e| {
+            WgAgentError::TunDevice(format!("Failed to get TUN device name: {}", e))
+        })?;
         
         // Make TUN device non-blocking for async I/O
         tun_device.set_nonblock().map_err(|e| {
@@ -227,6 +235,7 @@ impl WgDevice {
 
         let mut device = Self {
             config,
+            actual_interface,
             tun_device,
             udp_socket,
             peer_tunnels,
@@ -587,6 +596,11 @@ impl WgDevice {
         }
 
         info!("Command task stopped");
+    }
+
+    /// Get the actual interface name
+    pub fn interface_name(&self) -> &str {
+        &self.actual_interface
     }
 
     /// Get device statistics
