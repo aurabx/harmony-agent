@@ -9,10 +9,12 @@ use crate::platform::{get_platform, Platform};
 use crate::wireguard::{DeviceConfig, KeyPair, Peer, PeerConfig};
 #[cfg(target_os = "macos")]
 use crate::wireguard::MacOsWgDevice;
+#[cfg(not(target_os = "macos"))]
+use crate::wireguard::WgDevice;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 /// Tunnel state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -296,6 +298,10 @@ impl Tunnel {
         // (macOS device handles this in its start() method)
         #[cfg(not(target_os = "macos"))]
         {
+            // Get the actual interface name from the device (may differ from config)
+            let interface_name = device.interface_name();
+            info!("Configuring Linux WireGuard interface: {}", interface_name);
+
             // Assign IP address to interface if specified
             if let Some(ref address) = self.config.address {
                 debug!("Assigning address {} to interface {}", address, interface_name);

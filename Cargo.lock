@@ -718,6 +718,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "harmony-agent"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64 0.22.1",
+ "boringtun",
+ "clap",
+ "criterion",
+ "libc",
+ "mockall",
+ "proptest",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "serial_test",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "toml",
+ "tracing",
+ "tracing-subscriber",
+ "tun",
+ "x25519-dalek",
+ "zeroize",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2059,34 +2087,6 @@ checksum = "9367c417a924a74cae129e6a2ae3b47fabb1f8995595ab474029da749a8be120"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "wg-agent"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "base64 0.22.1",
- "boringtun",
- "clap",
- "criterion",
- "libc",
- "mockall",
- "proptest",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "serial_test",
- "tempfile",
- "thiserror",
- "tokio",
- "toml",
- "tracing",
- "tracing-subscriber",
- "tun",
- "x25519-dalek",
- "zeroize",
 ]
 
 [[package]]
