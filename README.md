@@ -1,7 +1,8 @@
 # wg-agent
 
-[![CI](https://github.com/aurabx/wg-agent/workflows/CI/badge.svg)](https://github.com/aurabx/wg-agent/actions)
-[![codecov](https://codecov.io/gh/runbeam/wg-agent/branch/main/graph/badge.svg)](https://codecov.io/gh/runbeam/wg-agent)
+[//]: # ([![CI]&#40;https://github.com/aurabx/wg-agent/workflows/CI/badge.svg&#41;]&#40;https://github.com/aurabx/wg-agent/actions&#41;)
+
+[//]: # ([![codecov]&#40;https://codecov.io/gh/runbeam/wg-agent/branch/main/graph/badge.svg&#41;]&#40;https://codecov.io/gh/runbeam/wg-agent&#41;)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
 
