@@ -251,6 +251,36 @@ impl CommandHandler {
 
         states
     }
+
+    /// Register an existing tunnel (for auto-started tunnels from config)
+    pub async fn register_tunnel(&self, network: String, tunnel: Arc<Tunnel>) {
+        info!("Registering tunnel for network: {}", network);
+        let mut tunnels = self.tunnels.write().await;
+        tunnels.insert(network, tunnel);
+    }
+
+    /// Stop a tunnel by network name
+    pub async fn stop_tunnel(&self, network: &str) -> Result<(), crate::control::ApiError> {
+        info!("Stopping tunnel: {}", network);
+        
+        // Get tunnel
+        let tunnel = {
+            let tunnels = self.tunnels.read().await;
+            tunnels
+                .get(network)
+                .cloned()
+                .ok_or_else(|| crate::control::ApiError::NetworkNotFound(network.to_string()))?
+        };
+        
+        // Stop tunnel
+        tunnel.stop().await.map_err(crate::control::ApiError::from)?;
+        
+        // Remove from active tunnels
+        let mut tunnels = self.tunnels.write().await;
+        tunnels.remove(network);
+        
+        Ok(())
+    }
 }
 
 impl Default for CommandHandler {

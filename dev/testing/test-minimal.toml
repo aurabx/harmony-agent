@@ -1,0 +1,7 @@
+# Minimal test configuration for wg-agent
+# No tunnels enabled, just for testing control server
+
+[network.test]
+enable_wireguard = false
+interface = "wg0"
+private_key_path = "/tmp/test.key"  # Not used since wireguard disabled

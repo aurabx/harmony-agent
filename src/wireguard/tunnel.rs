@@ -544,7 +544,6 @@ impl std::fmt::Display for TunnelStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::wireguard::PrivateKey;
 
     #[test]
     fn test_tunnel_state_transitions() {

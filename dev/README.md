@@ -113,6 +113,73 @@ rm -rf ./examples/keys ./examples/wireguard-server/config
 rm config.toml
 ```
 
+## Control Server Testing
+
+Test the control server API quickly:
+
+```bash
+# Quick test - verifies server is running and responding
+./dev/test-control-server.sh
+
+# Test with custom socket path
+./dev/test-control-server.sh /tmp/custom.sock
+```
+
+**What it tests:**
+- Socket file exists
+- Socket is accessible
+- Server responds to requests
+- Response is valid JSON
+
+**Expected output:**
+```
+Testing wg-agent Control Server
+================================
+
+1. Checking if socket exists: /var/run/wg-agent.sock
+   ✅ PASS: Socket exists
+
+2. Checking socket permissions
+   ✅ PASS: Socket is accessible
+
+3. Testing connection with Python
+   ✅ PASS: Server responded
+   ✅ PASS: Response is valid JSON
+
+================================
+✅ ALL TESTS PASSED
+```
+
+### Rust Integration Tests
+
+```bash
+# Run control server integration tests
+cargo test --test control_server_test -- --ignored --nocapture
+```
+
+### Manual Testing
+
+```bash
+# Using socat
+echo '{"id":"test-1","action":"status","network":"default"}' | \
+  socat - UNIX-CONNECT:/var/run/wg-agent.sock
+
+# Using Python
+python3 << 'EOF'
+import socket, json
+sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+sock.connect("/var/run/wg-agent.sock")
+sock.sendall(json.dumps({"action":"status","network":"default"}).encode() + b"\n")
+print(json.loads(sock.recv(4096)))
+EOF
+```
+
+### Documentation
+
+- `CONTROL_API_TESTING.md` - Comprehensive testing guide
+- `IMPLEMENTATION_SUMMARY.md` - Architecture details
+- `../docs/API.md` - Complete API reference
+
 ## Other Examples
 
 - **test_device.rs** - Manual WireGuard device testing example

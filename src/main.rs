@@ -7,8 +7,15 @@ use clap::{Parser, Subcommand};
 use tracing::{error, info};
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
-use harmony_agent::{APP_NAME, VERSION, config::Config, service::{create_service, ServiceMode}, monitoring::Monitor};
+use harmony_agent::{
+    APP_NAME, VERSION,
+    config::Config,
+    service::{create_service, ServiceMode},
+    monitoring::Monitor,
+    control::{CommandHandler, ControlServer, DEFAULT_SOCKET_PATH},
+};
 use std::sync::Arc;
+use std::path::PathBuf;
 use axum::{
     routing::get,
     Router,
@@ -97,9 +104,12 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             service.notify_ready()?;
             info!("Service started successfully");
             
+            // Create command handler and load configuration
+            let handler = Arc::new(CommandHandler::new());
+            handler.load_config(config.clone()).await;
+            
             // Auto-start tunnels for networks with enable_wireguard = true
             info!("Checking for enabled WireGuard networks...");
-            let mut active_tunnels = std::collections::HashMap::new();
             
             for (name, network) in &config.networks {
                 if network.enable_wireguard {
@@ -110,7 +120,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                             match tunnel.start().await {
                                 Ok(()) => {
                                     info!("Tunnel '{}' started successfully", name);
-                                    active_tunnels.insert(name.clone(), tunnel);
+                                    // Register tunnel with handler
+                                    handler.register_tunnel(name.clone(), Arc::new(tunnel)).await;
                                 }
                                 Err(e) => {
                                     error!("Failed to start tunnel '{}': {}", name, e);
@@ -124,7 +135,25 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 }
             }
             
-            info!("Started {} WireGuard tunnel(s)", active_tunnels.len());
+            let active_count = handler.list_networks().await.len();
+            info!("Started {} WireGuard tunnel(s)", active_count);
+            
+            // Create control server
+            let socket_path = PathBuf::from(DEFAULT_SOCKET_PATH);
+            let control_server = Arc::new(ControlServer::new(socket_path.clone(), handler.clone()));
+            
+            // Spawn control server task
+            info!("Spawning control server task...");
+            let control_handle = {
+                let server = control_server.clone();
+                tokio::spawn(async move {
+                    info!("Control server task started, calling start()...");
+                    if let Err(e) = server.start().await {
+                        error!("Control server error: {}", e);
+                    }
+                    info!("Control server task ended");
+                })
+            };
             
             // Start HTTP server for metrics and health endpoints
             let monitor = Arc::new(Monitor::new());
@@ -136,12 +165,29 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             let listener = tokio::net::TcpListener::bind(addr).await?;
             info!("HTTP server listening on {}", addr);
             
-            // Run server with graceful shutdown
+            // Run HTTP server with graceful shutdown
             axum::serve(listener, app)
                 .with_graceful_shutdown(shutdown_signal())
                 .await?;
             
             info!("Shutting down agent");
+            
+            // Shutdown control server
+            if let Err(e) = control_server.shutdown().await {
+                error!("Failed to shutdown control server: {}", e);
+            }
+            
+            // Abort control server task
+            control_handle.abort();
+            
+            // Stop all tunnels
+            for network in handler.list_networks().await {
+                info!("Stopping tunnel: {}", network);
+                if let Err(e) = handler.stop_tunnel(&network).await {
+                    error!("Failed to stop tunnel '{}': {}", network, e);
+                }
+            }
+            
             service.stop()?;
             Ok(())
         },
