@@ -235,8 +235,8 @@ async fn metrics(monitor: Arc<Monitor>) -> impl IntoResponse {
     
     // Network stats
     for (network, stat) in stats.iter() {
-        output.push_str(&format!("# HELP wg_network_state Network connection state (0=disconnected, 1=connecting, 2=connected, 3=degraded, 4=failed)\n"));
-        output.push_str(&format!("# TYPE wg_network_state gauge\n"));
+        output.push_str("# HELP wg_network_state Network connection state (0=disconnected, 1=connecting, 2=connected, 3=degraded, 4=failed)\n");
+        output.push_str("# TYPE wg_network_state gauge\n");
         let state_value = match stat.state {
             harmony_agent::monitoring::ConnectionState::Disconnected => 0,
             harmony_agent::monitoring::ConnectionState::Connecting => 1,
@@ -246,20 +246,20 @@ async fn metrics(monitor: Arc<Monitor>) -> impl IntoResponse {
         };
         output.push_str(&format!("wg_network_state{{network=\"{}\"}} {}\n\n", network, state_value));
         
-        output.push_str(&format!("# HELP wg_bytes_transmitted Total bytes transmitted\n"));
-        output.push_str(&format!("# TYPE wg_bytes_transmitted counter\n"));
+        output.push_str("# HELP wg_bytes_transmitted Total bytes transmitted\n");
+        output.push_str("# TYPE wg_bytes_transmitted counter\n");
         output.push_str(&format!("wg_bytes_transmitted{{network=\"{}\"}} {}\n\n", network, stat.tx_bytes));
         
-        output.push_str(&format!("# HELP wg_bytes_received Total bytes received\n"));
-        output.push_str(&format!("# TYPE wg_bytes_received counter\n"));
+        output.push_str("# HELP wg_bytes_received Total bytes received\n");
+        output.push_str("# TYPE wg_bytes_received counter\n");
         output.push_str(&format!("wg_bytes_received{{network=\"{}\"}} {}\n\n", network, stat.rx_bytes));
         
-        output.push_str(&format!("# HELP wg_peers_total Total number of peers\n"));
-        output.push_str(&format!("# TYPE wg_peers_total gauge\n"));
+        output.push_str("# HELP wg_peers_total Total number of peers\n");
+        output.push_str("# TYPE wg_peers_total gauge\n");
         output.push_str(&format!("wg_peers_total{{network=\"{}\"}} {}\n\n", network, stat.total_peers));
         
-        output.push_str(&format!("# HELP wg_peers_active Active peers\n"));
-        output.push_str(&format!("# TYPE wg_peers_active gauge\n"));
+        output.push_str("# HELP wg_peers_active Active peers\n");
+        output.push_str("# TYPE wg_peers_active gauge\n");
         output.push_str(&format!("wg_peers_active{{network=\"{}\"}} {}\n\n", network, stat.active_peers));
     }
     

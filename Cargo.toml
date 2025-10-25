@@ -1,7 +1,17 @@
 [package]
 name = "harmony-agent"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+authors = ["Aurabox <hello@aurabox.cloud>"]
+description = "A cross-platform WireGuard network agent for managing VPN tunnels"
+license = "Apache-2.0"
+repository = "https://github.com/aurabx/harmony-agent"
+homepage = "https://github.com/aurabx/harmony-agent"
+#documentation = "https://docs.rs/harmony-agent"
+readme = "README.md"
+keywords = ["wireguard", "vpn", "networking", "tunnel", "agent"]
+categories = ["network-programming", "command-line-utilities"]
+exclude = ["dev/", ".github/", "tmp/", "target/", "*.log"]
 
 [dependencies]
 tokio = { version = "1.41", features = ["full"] }

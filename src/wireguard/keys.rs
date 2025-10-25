@@ -312,7 +312,7 @@ mod tests {
 
     #[test]
     fn test_invalid_length() {
-        let short_key = BASE64.encode(&[0u8; 16]);
+        let short_key = BASE64.encode([0u8; 16]);
         assert!(PrivateKey::from_base64(&short_key).is_err());
     }
 }

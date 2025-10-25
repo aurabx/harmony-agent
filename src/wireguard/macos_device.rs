@@ -82,7 +82,7 @@ impl MacOsWgDevice {
             wg_config.push_str(&format!("ListenPort = {}\n", config.listen_port));
         }
 
-        wg_config.push_str("\n");
+        wg_config.push('\n');
 
         // [Peer] sections
         for peer in &config.peers {
@@ -110,7 +110,7 @@ impl MacOsWgDevice {
                 ));
             }
 
-            wg_config.push_str("\n");
+            wg_config.push('\n');
         }
 
         Ok(wg_config)
@@ -156,7 +156,7 @@ impl MacOsWgDevice {
 
         // Configure IP address
         Command::new("ifconfig")
-            .args(&[
+            .args([
                 &actual_interface,
                 address.split('/').next().unwrap(),
                 address.split('/').next().unwrap(),
@@ -172,7 +172,7 @@ impl MacOsWgDevice {
         for route in routes {
             debug!("Adding route: {} via {}", route, actual_interface);
             let _ = Command::new("route")
-                .args(&["add", "-net", route, "-interface", &actual_interface])
+                .args(["add", "-net", route, "-interface", &actual_interface])
                 .output();
         }
 
@@ -226,7 +226,7 @@ impl MacOsWgDevice {
 
         // Bring down the interface
         let _ = Command::new("ifconfig")
-            .args(&[&self.interface_name, "down"])
+            .args([&self.interface_name, "down"])
             .output();
 
         // Remove config file

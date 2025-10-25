@@ -184,9 +184,9 @@ impl Platform for MacOsPlatform {
         
         // Build scutil configuration
         let mut config = String::new();
-        config.push_str(&format!("d.init\n"));
+        config.push_str("d.init\n");
         config.push_str(&format!("d.add ServerAddresses * {}", dns_servers.join(" ")));
-        config.push_str("\n");
+        config.push('\n');
         config.push_str(&format!("set State:/Network/Service/{}/DNS\n", interface));
         config.push_str("quit\n");
         

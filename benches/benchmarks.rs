@@ -6,7 +6,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion, Benchmark
 use harmony_agent::config::{Config, NetworkConfig, PeerConfig};
 use harmony_agent::monitoring::{Monitor, ConnectionState};
 use harmony_agent::security::{validate_network_name, validate_interface_name};
-use harmony_agent::wireguard::{PrivateKey, PublicKey};
+use harmony_agent::wireguard::PrivateKey;
 
 fn bench_key_generation(c: &mut Criterion) {
     c.bench_function("key_generation", |b| {
@@ -144,15 +144,25 @@ fn bench_network_config_with_peers(c: &mut Criterion) {
             peer_count,
             |b, &count| {
                 b.iter(|| {
-                    let mut network = NetworkConfig::default();
-                    network.name = "test".to_string();
-                    network.interface = "wg0".to_string();
+                    let mut network = NetworkConfig {
+                        enable_wireguard: true,
+                        interface: "wg0".to_string(),
+                        mtu: 1420,
+                        private_key_path: "/tmp/test.key".to_string(),
+                        dns: vec![],
+                        address: Some("10.0.0.1/24".to_string()),
+                        peers: vec![],
+                        http: None,
+                    };
                     
                     for i in 0..count {
-                        let mut peer = PeerConfig::default();
-                        peer.name = Some(format!("peer{}", i));
-                        peer.public_key = format!("key{}", i);
-                        peer.allowed_ips = vec![format!("10.0.{}.0/24", i)];
+                        let peer = PeerConfig {
+                            name: format!("peer{}", i),
+                            public_key: format!("key{}", i),
+                            endpoint: format!("192.168.{}.1:51820", i),
+                            allowed_ips: vec![format!("10.0.{}.0/24", i)],
+                            persistent_keepalive_secs: 25,
+                        };
                         network.peers.push(peer);
                     }
                     

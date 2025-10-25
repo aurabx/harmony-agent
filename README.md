@@ -20,6 +20,12 @@ This is a core part of the Harmony system, providing connectivity between Harmon
 - 🛡️ **Hardened**: Input validation, secure defaults, audit logging
 - 📡 **Control API**: Unix sockets (Linux/macOS) and Named Pipes (Windows)
 
+## Known Limitations
+- Windows implementation requires further testing
+- Integration tests for control server need refinement
+- Key rotation mechanism not yet implemented
+- Full Docker and Kubernetes patterns under active development
+
 ## Quick Start
 
 ### Installation
